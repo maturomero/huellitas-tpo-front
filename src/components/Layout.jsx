@@ -6,6 +6,11 @@ import { BrowserRouter, Routes, Route, Outlet, Link, useNavigate } from "react-r
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
+  // arriba del return, dentro del componente Layout
+const EMAIL = "petshophuellitas04@gmail.com";      // ← cambialo por el tuyo
+const subject = encodeURIComponent("Consulta desde la web");
+const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
+
   return (
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
@@ -74,10 +79,16 @@ export const Layout = () => {
           <p className="text-subtext-light">
             © 2025 Huellitas PetShop. Todos los derechos reservados.
           </p>
+
           <div className="flex justify-center space-x-4 mt-4">
+            {/* Facebook - abre en pestaña nueva */}
             <a
-              href="#"
+              href="https://www.facebook.com/profile.php?id=61581743836499"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
               className="text-subtext-light hover:text-primary transition-colors"
+              title="Facebook"
             >
               <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -87,17 +98,29 @@ export const Layout = () => {
                 />
               </svg>
             </a>
+
+            {/* Correo - reemplaza el "Twitter" por un mailto */}
             <a
-              href="#"
+              href={`mailto:${EMAIL}?subject=${subject}&body=${body}`}
+              aria-label="Enviar correo"
               className="text-subtext-light hover:text-primary transition-colors"
+              title={`Escribir a ${EMAIL}`}
             >
-              <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+              {/* Ícono de sobre (email) */}
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M1.5 8.67V18A2.25 2.25 0 003.75 20.25h16.5A2.25 2.25 0 0022.5 18V8.67l-9.33 5.6a2.25 2.25 0 01-2.34 0L1.5 8.67z"/>
+                <path d="M22.5 6.75v-.008A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.742v.008l9.33 5.6a2.25 2.25 0 002.34 0l9.33-5.6z"/>
               </svg>
             </a>
+
+            {/* Instagram - abre en pestaña nueva */}
             <a
-              href="#"
+              href="https://www.instagram.com/petshophuellitas04/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
               className="text-subtext-light hover:text-primary transition-colors"
+              title="Instagram"
             >
               <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path
