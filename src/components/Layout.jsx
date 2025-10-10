@@ -7,7 +7,7 @@ import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
   return (
-    <div className="bg-background-light dark:bg-background-dark font-sans min-h-screen flex flex-col">
+    <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
         {/* HEADER */}
         <header className="py-6 flex justify-between items-center">
@@ -30,25 +30,25 @@ export const Layout = () => {
             <nav className="hidden md:flex space-x-8">
               <a
                 href="/"
-                className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary transition-colors"
+                className="text-text-light hover:text-primary transition-colors"
               >
                 Inicio
               </a>
               <a
                 href="/productos"
-                className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary transition-colors"
+                className="text-text-light hover:text-primary transition-colors"
               >
                 Productos
               </a>
               <a
                 href="#"
-                className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary transition-colors"
+                className="text-text-light hover:text-primary transition-colors"
               >
                 Contacto
               </a>
             </nav>
 
-            <button className="relative text-text-light dark:text-text-dark">
+            <button className="relative text-text-light">
               <span className="material-icons">shopping_cart</span>
               {/* badge opcional
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
@@ -59,7 +59,7 @@ export const Layout = () => {
           </div>
 
           {/* Menú móvil */}
-          <button className="md:hidden text-text-light dark:text-text-dark">
+          <button className="md:hidden text-text-light">
             <span className="material-icons">menu</span>
           </button>
         </header>
@@ -70,14 +70,14 @@ export const Layout = () => {
         </main>
 
         {/* FOOTER */}
-        <footer className="text-center py-8 border-t border-gray-200 dark:border-gray-700 mt-12">
-          <p className="text-subtext-light dark:text-subtext-dark">
+        <footer className="text-center py-8 border-t border-gray-200">
+          <p className="text-subtext-light">
             © 2025 Huellitas PetShop. Todos los derechos reservados.
           </p>
           <div className="flex justify-center space-x-4 mt-4">
             <a
               href="#"
-              className="text-subtext-light dark:text-subtext-dark hover:text-primary dark:hover:text-primary transition-colors"
+              className="text-subtext-light hover:text-primary transition-colors"
             >
               <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -89,7 +89,7 @@ export const Layout = () => {
             </a>
             <a
               href="#"
-              className="text-subtext-light dark:text-subtext-dark hover:text-primary dark:hover:text-primary transition-colors"
+              className="text-subtext-light hover:text-primary transition-colors"
             >
               <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
@@ -97,7 +97,7 @@ export const Layout = () => {
             </a>
             <a
               href="#"
-              className="text-subtext-light dark:text-subtext-dark hover:text-primary dark:hover:text-primary transition-colors"
+              className="text-subtext-light hover:text-primary transition-colors"
             >
               <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path
