@@ -12,8 +12,8 @@
     
     <title>Huellitas PetShop</title>
 
+    <link href="/src/globals.css" rel="stylesheet"/>
     <!-- 🟢 Tailwind + Fonts + Material Icons -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
       rel="stylesheet"
@@ -24,32 +24,10 @@
     />
 
     <!-- 🎨 Configuración personalizada de colores -->
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              primary: "#34A853",
-              "background-light": "#F5F5F5",
-              "background-dark": "#1a202c",
-              "card-light": "#FFFFFF",
-              "card-dark": "#2d3748",
-              "text-light": "#1f2937",
-              "text-dark": "#f7fafc",
-              "subtext-light": "#6b7280",
-              "subtext-dark": "#a0aec0",
-            },
-            fontFamily: {
-              sans: ["Inter", "sans-serif"],
-            },
-          },
-        },
-      };
-    </script>
+
   </head>
 
-  <body class="bg-background-light dark:bg-background-dark font-sans">
+  <body class="bg-background-light font-sans">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
