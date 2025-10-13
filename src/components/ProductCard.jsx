@@ -115,7 +115,7 @@ export const ProductCard = ({ product }) => {
               ${transferNum.toFixed(2)}
             </span>
             <span className="ml-1 rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
-              Transfer
+              Transferencia
             </span>
           </div>
         ) : (
