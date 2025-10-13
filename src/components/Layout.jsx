@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuthContext } from '../contexts/AuthContext'
 //import { Outlet } from "react-router"; chat gpt recomendia el de abajo je;
 
 import { BrowserRouter, Routes, Route, Outlet, Link, useNavigate } from "react-router-dom";
@@ -6,6 +7,7 @@ import { BrowserRouter, Routes, Route, Outlet, Link, useNavigate } from "react-r
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
+  const { status, user, logout } = useAuthContext()
   // arriba del return, dentro del componente Layout
 const EMAIL = "petshophuellitas04@gmail.com";      // ← cambialo por el tuyo
 const subject = encodeURIComponent("Consulta desde la web");
@@ -33,24 +35,18 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
           {/* Centro/Derecha: nav + carrito */}
           <div className="flex items-center space-x-8">
             <nav className="hidden md:flex space-x-8">
-              <a
-                href="/"
-                className="text-text-light hover:text-primary transition-colors"
-              >
+              <Link to="/" className="text-text-light hover:text-primary transition-colors">
                 Inicio
-              </a>
-              <a
-                href="/productos"
-                className="text-text-light hover:text-primary transition-colors"
-              >
+              </Link>
+              <Link to="/productos" className="text-text-light hover:text-primary transition-colors">
                 Productos
-              </a>
-              <a
-                href="#"
-                className="text-text-light hover:text-primary transition-colors"
-              >
-                Contacto
-              </a>
+              </Link>
+
+              {status === 'not-authenticated' && (
+                <Link to="/login" className="text-text-light hover:text-primary transition-colors">
+                  Iniciar sesión
+                </Link>
+              )}
             </nav>
 
             <button className="relative text-text-light">
@@ -61,6 +57,16 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
               </span>
               */}
             </button>
+            
+            {status === 'authenticated' && (
+              <>
+                <p className="text-sm text-gray-600">Hola {user.profile.fullname}!</p>
+                <button onClick={logout}>
+                  Salir
+                </button>
+              </>
+            )}
+
           </div>
 
           {/* Menú móvil */}
