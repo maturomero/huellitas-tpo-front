@@ -4,6 +4,14 @@ import { backend } from "../api/backend";
 
 const FALLBACK = "/placeholder.png";
 
+const detectMime = (b64) => {
+  if (b64.startsWith("iVBORw0K")) return "image/png";
+  if (b64.startsWith("/9j/")) return "image/jpeg";
+  if (b64.startsWith("R0lGOD")) return "image/gif";
+  if (b64.startsWith("UklGR")) return "image/webp";
+  return "image/jpeg";
+}
+
 export const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   if (!product) return null;
@@ -42,17 +50,22 @@ export const ProductCard = ({ product }) => {
       .get("/products/images", { params: { id: firstId }, signal: ctrl.signal })
       .then((res) => {
         if (!alive) return;
-        const base64 = res.data?.file;
+       const base64 = res.data?.file;
         if (base64) {
-          // Heurística simple para MIME (png/jpg). Si no matchea, uso jpg.
-          const mime = base64.startsWith("iVBORw0K") ? "image/png" : "image/jpeg";
-          setSrc(`data:${mime};base64,${base64}`);
+          const mime = detectMime(base64);
+          fetch(`data:${mime};base64,${base64}`)
+            .then(r => r.blob())
+            .then(blob => {
+              const url = URL.createObjectURL(blob);
+              setSrc(url);
+            });
         } else {
           setSrc(FALLBACK);
         }
       })
       .catch((err) => {
         // Si la request fue abortada, no hago nada
+        console.log("catch")
         if (ctrl.signal.aborted) return;
         setSrc(FALLBACK);
       });
