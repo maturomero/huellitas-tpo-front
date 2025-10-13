@@ -53,12 +53,7 @@ export const ProductCard = ({ product }) => {
        const base64 = res.data?.file;
         if (base64) {
           const mime = detectMime(base64);
-          fetch(`data:${mime};base64,${base64}`)
-            .then(r => r.blob())
-            .then(blob => {
-              const url = URL.createObjectURL(blob);
-              setSrc(url);
-            });
+          setSrc(`data:${mime};base64,${base64}`)
         } else {
           setSrc(FALLBACK);
         }
