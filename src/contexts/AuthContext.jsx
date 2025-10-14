@@ -49,15 +49,33 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const register = async ({ fullName, email, password }) => {
+    try {
+      setStatus("checking");
+
+      await backend.post("/auth/register", {
+        fullName,
+        email,
+        password,
+        role: 'USER',
+      });
+
+      await login(email, password);
+    } catch (error) {
+      setStatus("not-authenticated");
+      throw error;
+    }
+  };
+
   const logout = () => {
-    window.localStorage.removeItem('user')
-    setUser(null)
-    setStatus('not-authenticated')
-  }
+    window.localStorage.removeItem("user");
+    setUser(null);
+    setStatus("not-authenticated");
+  };
 
   return (
-    <AuthContext.Provider value={{ status, user, login, logout }}>
+    <AuthContext.Provider value={{ status, user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
