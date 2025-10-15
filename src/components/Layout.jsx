@@ -2,7 +2,7 @@ import React from "react";
 import { useAuthContext } from '../contexts/AuthContext'
 //import { Outlet } from "react-router"; chat gpt recomendia el de abajo je;
 
-import { BrowserRouter, Routes, Route, Outlet, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, NavLink, useNavigate } from "react-router-dom";
 
 import logo from "../assets/images/LOGO.jpg";
 
@@ -35,17 +35,17 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
           {/* Centro/Derecha: nav + carrito */}
           <div className="flex items-center space-x-8">
             <nav className="hidden md:flex space-x-8">
-              <Link to="/" className="text-text-light hover:text-primary transition-colors">
+              <NavLink to="/" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
                 Inicio
-              </Link>
-              <Link to="/productos" className="text-text-light hover:text-primary transition-colors">
+              </NavLink>
+              <NavLink to="/productos" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
                 Productos
-              </Link>
+              </NavLink>
 
               {status === 'not-authenticated' && (
-                <Link to="/login" className="text-text-light hover:text-primary transition-colors">
+                <NavLink to="/login" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
                   Iniciar sesión
-                </Link>
+                </NavLink>
               )}
             </nav>
 

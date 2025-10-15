@@ -1,11 +1,15 @@
 import React, { useEffect } from "react";
 import useProducts from "../hooks/useProducts";
-import { ProductCard } from "../components/ProductCard";
 import { HeroSection } from "../components/home/HeroSection";
 import { ProductsGrid } from "../components/ProductsGrid";
+import { Link } from "react-router-dom";
+import { useAuthContext } from "../contexts/AuthContext";
+import NewProductButton from "../components/NewProductButton";
 
 export const HomePage = () => {
   const { products, getProducts } = useProducts();
+  const { user } = useAuthContext();
+  const isAdmin = user?.profile?.role === "ADMIN" || user?.role === "ADMIN";
 
   // Traigo productos al montar
   useEffect(() => {
@@ -13,13 +17,13 @@ export const HomePage = () => {
   }, []);
 
   // Muestro los primeros 4 en la home
-  const featured = products.slice(0, 4);
+  const featured = (products ?? []).slice(0, 4);
 
   return (
     <>
-      <HeroSection/>
-
-      <ProductsGrid products={featured}/> 
+      <HeroSection />
+      <NewProductButton topClass="top-[90%]" />
+      <ProductsGrid products={featured} getProducts={getProducts} />
     </>
   );
 };

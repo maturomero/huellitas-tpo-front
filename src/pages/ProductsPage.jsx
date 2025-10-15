@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useProducts from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
+import NewProductButton from "../components/NewProductButton";
 
 export const ProductsPage = () => {
   const { products, getProducts } = useProducts();
@@ -208,12 +209,13 @@ export const ProductsPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} getProducts={getProducts} />
               ))}
             </div>
           )}
         </section>
       </div>
+      <NewProductButton topClass="top-[90%]" />
     </div>
   );
 };

@@ -53,14 +53,28 @@ export const AuthProvider = ({ children }) => {
     try {
       setStatus("checking");
 
-      await backend.post("/auth/register", {
+      const response = await backend.post("/auth/register", {
         fullName,
         email,
         password,
         role: 'USER',
       });
 
-      await login(email, password);
+      const userData = {
+        userId: response.data.userId,
+        accessToken: response.data.access_token,
+        profile: null
+      }
+
+      window.localStorage.setItem("user", JSON.stringify(userData))
+
+      const responseUserData = await backend.get(`/users/${userData.userId}`)
+      userData.profile = responseUserData.data
+
+      window.localStorage.setItem("user", JSON.stringify(userData))
+
+      setUser(userData)
+      setStatus("authenticated")
     } catch (error) {
       setStatus("not-authenticated");
       throw error;

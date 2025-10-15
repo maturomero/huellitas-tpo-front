@@ -5,7 +5,7 @@ import { ProductsPage } from "../pages/ProductsPage";
 import { ProductPage } from "../pages/ProductPage";
 import { OrderPage } from "../pages/OrderPage";
 import { RegisterPage } from "../pages/RegisterPage";
-import { NewProductPage } from "../pages/NewProductPage";
+import NewProductPage from "../pages/NewProductPage";
 import { EditProductPage } from "../pages/EditProductPage";
 import { Layout } from "../components/Layout";
 import PublicRoutes from './PublicRoutes'
@@ -36,7 +36,7 @@ export default function AppRouter() {
           <Route path="/orden" element={<OrderPage />} />
 
           <Route element={<AdminRoutes />}>
-            <Route path="/productos/editar/:productId" element={<EditProductPage />} />
+            <Route path="/productos/:productId/editar" element={<NewProductPage />} />
             <Route path="/productos/nuevo" element={<NewProductPage />} />
           </Route>
         </Route>
