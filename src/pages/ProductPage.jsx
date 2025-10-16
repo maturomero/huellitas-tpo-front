@@ -1,7 +1,10 @@
 // src/pages/ProductPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { backend } from "../api/backend";
+import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
+import { useAuthContext } from "../contexts/AuthContext"
+
 import logo from "../assets/images/LOGO.jpg"; // fallback local
 
 const FALLBACK = logo;
@@ -25,6 +28,8 @@ const getAnimalData = (p) => {
 export const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+
+  const { user } = useAuthContext()
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
@@ -253,23 +258,33 @@ export const ProductPage = () => {
           </div>
 
           {/* Acciones */}
-          <div className="mt-2 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => console.log("ADD_TO_CART:", product)}
-              className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-              disabled={stockLabel === "Sin stock"}
-            >
-              Agregar al carrito
-            </button>
+          <div className="mt-2 flex gap-3">
+            {user?.profile?.role === "USER" 
+              ? <ConfirmBuyComponent product={product} /> 
+              : ""
+              }
+            
+            {user?.profile?.role === 'ADMIN'
+              ? (
+                <Link 
+                  to={`/productos/${product.id}/editar`}
+                  className="flex-1 text-center w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                >
+                  Editar
+                </Link>
+              )
+              : user?.profile ? (
+                <button
+                  type="button"
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-bold text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  disabled={stockLabel === "Sin stock"}
+                >
+                  Finalizar compra
+                </button>
+              ) : null
+            }
 
-            <button
-              type="button"
-              className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-bold text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              disabled={stockLabel === "Sin stock"}
-            >
-              Finalizar compra
-            </button>
+            
           </div>
 
           {product?.description && (

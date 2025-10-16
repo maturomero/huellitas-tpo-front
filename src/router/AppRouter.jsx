@@ -13,6 +13,8 @@ import PrivateRoutes from './PrivateRoutes'
 import AdminRoutes from './AdminRoutes'
 import { useAuthContext } from "../contexts/AuthContext";
 import LoadingPage from "../pages/LoadingPage";
+import OrderDetailPage from "../pages/OrderDetailPage";
+
 
 export default function AppRouter() {
   const { status } = useAuthContext()
@@ -34,6 +36,7 @@ export default function AppRouter() {
 
         <Route element={<PrivateRoutes />}>
           <Route path="/orden" element={<OrderPage />} />
+          <Route path="/orden/:id" element={<OrderDetailPage />} />
 
           <Route element={<AdminRoutes />}>
             <Route path="/productos/:productId/editar" element={<NewProductPage />} />

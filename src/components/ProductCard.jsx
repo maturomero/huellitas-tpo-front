@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { backend } from "../api/backend";
 import { useAuthContext } from "../contexts/AuthContext";
+import ConfirmBuyComponent from "./ConfirmBuyComponent";
+import { detectMime } from "../helpers/detectMime"
 
 // Placeholder inline (no depende de /public)
 const FALLBACK =
@@ -17,20 +19,11 @@ const FALLBACK =
     </svg>`
   );
 
-const detectMime = (b64) => {
-  if (!b64) return "image/jpeg";
-  if (b64.startsWith("data:")) return ""; // ya viene con prefijo
-  if (b64.startsWith("iVBORw0K")) return "image/png";
-  if (b64.startsWith("/9j/")) return "image/jpeg";
-  if (b64.startsWith("R0lGOD")) return "image/gif";
-  if (b64.startsWith("UklGR")) return "image/webp";
-  return "image/jpeg";
-};
-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const ProductCard = ({ product, getProducts }) => {
   const { user } = useAuthContext();
+
   const navigate = useNavigate();
   if (!product) return null;
 
@@ -197,14 +190,8 @@ const handleDelete = async()=> {
           <p className="mt-1 text-lg font-bold text-emerald-600">{priceText}</p>
         )}
 
-        <div className="flex items-center gap-2 w-full">
-          <button
-            type="button"
-            onClick={() => console.log("ADD_TO_CART:", product)}
-            className="flex-grow-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-          >
-            Agregar al carrito
-          </button>
+        <div className="flex items-center gap-2 w-full mt-2">
+          {user?.profile?.role === "USER" ? <ConfirmBuyComponent product={product} /> : null}
           {user?.profile?.role === "ADMIN" 
             ? (
               <Link 
