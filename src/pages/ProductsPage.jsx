@@ -3,6 +3,11 @@ import useProducts from "../hooks/useProducts";
 import ProductCard from "../components/ProductCard";
 import NewProductButton from "../components/NewProductButton";
 
+function capitalizar(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export const ProductsPage = () => {
   const { products, getProducts } = useProducts();
 
@@ -74,6 +79,7 @@ export const ProductsPage = () => {
       // animal
       if (animal) {
         const names = getAnimalNames(p).map((s) => s.toLowerCase());
+        console.log(names,animal.toLowerCase())
         if (!names.includes(animal.toLowerCase())) return false;
       }
 
@@ -135,7 +141,7 @@ export const ProductsPage = () => {
                 <option value="">Todas</option>
                 {categoryOptions.map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {capitalizar(c)}
                   </option>
                 ))}
               </select>
@@ -152,7 +158,7 @@ export const ProductsPage = () => {
                 <option value="">Todos</option>
                 {animalOptions.map((a) => (
                   <option key={a} value={a}>
-                    {a}
+                    {capitalizar(a)}
                   </option>
                 ))}
               </select>

@@ -38,7 +38,7 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
               <NavLink to="/" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
                 Inicio
               </NavLink>
-              <NavLink to="/productos" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
+              <NavLink end to="/productos" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
                 Productos
               </NavLink>
 
@@ -47,16 +47,24 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
                   Iniciar sesión
                 </NavLink>
               )}
+
+              {user?.profile?.role === 'USER' && (
+                <NavLink end to="/orden" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
+                  Ordenes
+                </NavLink>
+              )}
             </nav>
 
-            <button className="relative text-text-light">
+
+
+            {/*<button className="relative text-text-light">
               <span className="material-icons">shopping_cart</span>
               {/* badge opcional
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
                 0
               </span>
+              </button>
               */}
-            </button>
             
             {status === 'authenticated' && (
               <>
