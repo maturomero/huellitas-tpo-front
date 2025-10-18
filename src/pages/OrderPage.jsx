@@ -222,13 +222,6 @@ export const OrderPage = () => {
             const imgSrc = imgMap[firstId] || FALLBACK;
             return <OrderCard key={o.id} order={o} firstImgSrc={imgSrc} />;
           })}
-
-          {/* Footer con user */}
-          {g.items.map((o) => (
-            <p key={`u-${o.id}`} className="text-[#64876e] text-sm px-1 mb-2">
-              {o?.user?.fullName || "—"} • {o?.user?.email || "—"}
-            </p>
-          ))}
         </div>
       ))}
     </div>

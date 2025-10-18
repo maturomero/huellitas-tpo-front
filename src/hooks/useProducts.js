@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { backend } from "../api/backend";
+import { useAuthContext } from "../contexts/AuthContext";
 
 function mapProduct(p) {
   return {
@@ -12,6 +13,7 @@ function mapProduct(p) {
     status: p.status,
     priceWithTransferDiscount: p.priceWithTransferDiscount,
     animal: Array.isArray(p.animal) && p.animal.length ? p.animal[0].name : "",
+    animals:p.animal,
     category: p.category?.description || "",
     raw: p,
   };
@@ -19,9 +21,10 @@ function mapProduct(p) {
 
 export default function useProducts() {
   const [products, setProducts] = useState([]);
-
+  const {user} = useAuthContext()
   const getProducts = () => {
-    backend.get("/products").then(res => setProducts(res.data.map(mapProduct)));
+    const url = user?.profile?.role == "ADMIN" ? "/products?sinStock=1":"/products?sinStock=0"
+    backend.get(url).then(res => setProducts(res.data.map(mapProduct)));
   };
 
   const getProductsByName = (search) => {

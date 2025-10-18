@@ -82,9 +82,9 @@ export default function OrderDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
-      <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3">← Volver</button>
+      <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
 
-      <h1 className="text-2xl font-bold text-[#111713] mb-1">Order #{order.id}</h1>
+      <h1 className="text-2xl font-bold text-[#111713] mb-1">Orden #{order.id}</h1>
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="px-3 py-1 rounded-full bg-[#f0f4f1] text-sm">{order.status}</span>
         {order.paymentMethod && <span className="px-3 py-1 rounded-full bg-[#f0f4f1] text-sm">{order.paymentMethod}</span>}
@@ -110,10 +110,10 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-[#111713]">{name}</p>
-                  <p className="text-sm text-[#111713]">productId #{pid}  Cantidad {qty}</p>
+                  <p className="text-sm text-[#111713]">productId #{pid} - Cantidad {qty}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-[#64876e]">Unit</p>
+                  <p className="text-sm text-[#64876e]">Precio Unitario</p>
                   <p className="font-medium">${unit.toFixed(2)}</p>
                 </div>
                 <div className="text-right w-24">

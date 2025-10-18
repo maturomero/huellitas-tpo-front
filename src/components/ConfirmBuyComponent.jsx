@@ -54,7 +54,7 @@ export default function ConfirmBuyComponent({ product, label = 'Comprar' }) {
             {isModalConfirmationOpen && createPortal(
                 <div className="bg-black/20 backdrop-blur-xs fixed left-0 top-0 z-50 w-screen h-screen">
                     <div className="w-fit fixed top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-white px-8 py-6">
-                        <h1 className="font-semibold">¿Estás seguro que deseas comprar este producto?</h1>
+                        <h1 className="font-semibold">¿Con qué medio de pago deseas pagar?</h1>
 
                         <div className="flex flex-col gap-2 mt-4">
                             <label className="cursor-pointer">

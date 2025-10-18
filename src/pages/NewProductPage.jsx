@@ -194,6 +194,7 @@ const NewProductPage = () => {
   return (
     <div className="min-h-[calc(100vh-96px-169px)] bg-white">
       <div className="max-w-[960px] mx-auto px-4 md:px-10 py-6">
+        <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
         <header className="py-2 md:py-4 mb-8">
           <h1 className="text-[#111713] text-[28px] md:text-[32px] font-bold leading-tight">
             Administración de Productos – Huellitas PetShop

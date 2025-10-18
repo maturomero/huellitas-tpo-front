@@ -59,6 +59,13 @@ export default function OrderCard({ order, firstImgSrc }) {
         </button>
       </div>
 
+
+      {/* Footer con user por item */}
+      <p className="text-[#64876e] text-sm px-1 mb-2">
+        {order?.user?.fullname ?? ""} • {order?.user?.email ?? ""}
+      </p>
+
+
       <div className="flex-1">
         <div className="aspect-video rounded-xl overflow-hidden bg-white">
           <img

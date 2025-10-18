@@ -159,6 +159,7 @@ export const ProductPage = () => {
   // ====== UI ======
   return (
     <div className="max-w-7xl mx-auto p-10">
+      <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
       <div className="grid grid-cols-1 md:grid-cols-13 gap-8">
         {/* LEFT: imagen + pagos */}
         <div className="md:col-span-7">
@@ -201,7 +202,7 @@ export const ProductPage = () => {
                 ${transferNum.toFixed(2)}
               </span>
               <span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
-                Transfer
+                Transferencia
               </span>
             </div>
           ) : (
