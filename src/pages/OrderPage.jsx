@@ -1,11 +1,9 @@
-// src/pages/OrderPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { backend } from "../api/backend";
 import OrderCard from "../components/OrderCard";
 import { detectMime } from "../helpers/detectMime"
 
-// Placeholder inline (simple)
 const FALLBACK =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -19,7 +17,6 @@ const FALLBACK =
     </svg>`
   );
 
-// Fecha/hora EXACTA desde el back (igual que detalle)
 function formatDateTimeFromBack(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -28,7 +25,6 @@ function formatDateTimeFromBack(iso) {
   });
 }
 
-// Tabs en español -> mapeo al status real del back
 const UI_STATUS = ["TODOS", "PENDIENTE", "APROBADO"];
 const UI_TO_API = { TODOS: "ALL", PENDIENTE: "PENDING", APROBADO: "APPROVED" };
 
@@ -38,9 +34,8 @@ export const OrderPage = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [q, setQ] = useState("");
-  const [imgMap, setImgMap] = useState({}); // productId -> src
+  const [imgMap, setImgMap] = useState({}); 
 
-  // ------- carga de órdenes -------
   useEffect(() => {
     let ignore = false;
     const ctrl = new AbortController();
@@ -60,17 +55,15 @@ export const OrderPage = () => {
     };
   }, []);
 
-  // ------- helpers para imagen del primer productId -------
   async function loadFirstImageSrc(productId) {
     try {
-      // 1) ids de imágenes del producto
+      
       const { data: ids } = await backend.get(`/products/images/${productId}`, {
         params: { ts: Date.now() }, // anti-cache
       });
       const list = Array.isArray(ids) ? ids : [];
       if (list.length === 0) return FALLBACK;
 
-      // 2) base64 (pedimos texto explícito y sin transformar)
       const { data: raw } = await backend.get(`/products/images`, {
         params: { id: list[0], ts: Date.now() },
       });
@@ -85,11 +78,10 @@ export const OrderPage = () => {
     }
   }
 
-  // ------- computados y filtros -------
   const withComputed = useMemo(() => {
     return orders.map((o) => {
       const items = Array.isArray(o.orderProducts) ? o.orderProducts : [];
-      // tu back usa "unit" (no "units")
+   
       const qty = items.reduce(
         (acc, it) => acc + Number((it?.units ?? it?.unit) || 0),
         0
@@ -126,7 +118,6 @@ export const OrderPage = () => {
     return list;
   }, [withComputed, statusFilter, q]);
 
-  // Agrupamos por día, label = fecha EXACTA del back
   const groups = useMemo(() => {
     const map = new Map();
     for (const o of filtered.toReversed()) {
@@ -142,20 +133,18 @@ export const OrderPage = () => {
     );
   }, [filtered]);
 
-  // cargar imágenes del primer producto de cada orden (una sola vez por productId)
   useEffect(() => {
     const uniqueFirstIds = Array.from(
       new Set(filtered.map((o) => o._firstProductId).filter(Boolean))
     );
     uniqueFirstIds.forEach(async (pid) => {
-      if (imgMap[pid]) return; // ya la tenemos
+      if (imgMap[pid]) return; 
       const src = await loadFirstImageSrc(pid);
       setImgMap((prev) => ({ ...prev, [pid]: src }));
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [filtered]);
 
-  // ------- UI -------
   if (loading) {
     return (
       <div className="px-6 py-10">
@@ -166,7 +155,7 @@ export const OrderPage = () => {
 
   return (
     <div className="px-6 md:px-10 lg:px-16 xl:px-24 py-6">
-      {/* Header */}
+      
       <div className="flex flex-wrap justify-between gap-3 mb-4">
         <div>
           <p className="text-[#111713] text-2xl md:text-3xl font-bold">Mis Ordenes</p>
@@ -176,7 +165,6 @@ export const OrderPage = () => {
         </button>
       </div>
 
-      {/* Buscador */}
       <div className="max-w-xl mb-3">
         <input
           value={q}
@@ -186,7 +174,6 @@ export const OrderPage = () => {
         />
       </div>
 
-      {/* Tabs de estado (español) */}
       <div className="flex h-10 items-center rounded-xl bg-[#f0f4f1] p-1 max-w-xl mb-6">
         {UI_STATUS.map((s) => {
           const active = statusFilter === s;
@@ -206,7 +193,6 @@ export const OrderPage = () => {
         })}
       </div>
 
-      {/* Listado agrupado por día */}
       {groups.length === 0 && (
         <p className="text-[#64876e]">No se encontraron órdenes.</p>
       )}

@@ -1,4 +1,3 @@
-// src/components/OrderCard.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -59,8 +58,6 @@ export default function OrderCard({ order, firstImgSrc }) {
         </button>
       </div>
 
-
-      {/* Footer con user por item */}
       <p className="text-[#64876e] text-sm px-1 mb-2">
         {order?.user?.fullname ?? ""} • {order?.user?.email ?? ""}
       </p>

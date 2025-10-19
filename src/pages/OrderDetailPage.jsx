@@ -1,4 +1,3 @@
-// src/pages/OrderDetailPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { backend } from "../api/backend";
@@ -21,11 +20,10 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
-  const [imgMap, setImgMap] = useState({});  // productId -> img src
-  const [nameMap, setNameMap] = useState({}); // productId -> product name
+  const [imgMap, setImgMap] = useState({});  
+  const [nameMap, setNameMap] = useState({}); 
   const [loading, setLoading] = useState(true);
 
-  // 1) Traer la orden por id
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -41,14 +39,13 @@ export default function OrderDetailPage() {
     return () => { ignore = true; };
   }, [id]);
 
-  // 2) Para cada productId de la orden, cargo imagen y nombre
   useEffect(() => {
     if (!order) return;
     const items = Array.isArray(order.orderProducts) ? order.orderProducts : [];
     const pids = [...new Set(items.map(i => i.productId).filter(Boolean))];
 
     pids.forEach(async (pid) => {
-      // imagen (ids -> base64)
+     
       if (!imgMap[pid]) {
         try {
           const { data: ids } = await backend.get(`/products/images/${pid}`, { params: { ts: Date.now() } });
@@ -63,7 +60,7 @@ export default function OrderDetailPage() {
           setImgMap(prev => ({ ...prev, [pid]: FALLBACK }));
         }
       }
-      // nombre (si la orden no lo trae)
+     
       if (!nameMap[pid]) {
         try {
           const { data: prod } = await backend.get(`/products/${pid}`);
@@ -74,7 +71,7 @@ export default function OrderDetailPage() {
         }
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [order]);
 
   if (loading) return <div className="p-6">Cargando orden…</div>;
@@ -91,7 +88,6 @@ export default function OrderDetailPage() {
         {order.date && <span className="px-3 py-1 rounded-full bg-[#f0f4f1] text-sm">{new Date(order.date).toLocaleString()}</span>}
       </div>
 
-      {/* Items */}
       <div className="rounded-xl bg-white shadow p-4 mb-6">
         <h2 className="font-semibold text-[#111713] mb-3">Productos</h2>
         <div className="space-y-3">
@@ -126,7 +122,6 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Resumen */}
       <div className="rounded-xl bg-white shadow p-4 mb-6">
         <h2 className="font-semibold text-[#111713] mb-3">Resumen</h2>
         <div className="flex justify-between text-sm mb-1">
@@ -140,7 +135,6 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Comprador */}
       <div className="rounded-xl bg-white shadow p-4">
         <h2 className="font-semibold text-[#111713] mb-2">Comprador</h2>
         <p className="text-sm text-[#111713]">{order?.user?.fullname || "—"}</p>

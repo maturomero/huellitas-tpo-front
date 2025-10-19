@@ -5,13 +5,12 @@ import { backend } from "../api/backend";
 import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
 import { useAuthContext } from "../contexts/AuthContext"
 
-import logo from "../assets/images/LOGO.jpg"; // fallback local
+import logo from "../assets/images/LOGO.jpg"; 
 
 const FALLBACK = logo;
 
-// ---------- MISMA LÓGICA QUE EN ProductsPage ----------
 const getAnimalData = (p) => {
-  // puede venir como array o como objeto simple
+
   if (Array.isArray(p?.animals) && p.animals.length > 0) {
     const first = p.animals[0];
     if (typeof first === "string") return { name: first };
@@ -23,7 +22,6 @@ const getAnimalData = (p) => {
   }
   return null;
 };
-// ------------------------------------------------------
 
 export const ProductPage = () => {
   const { productId } = useParams();
@@ -36,7 +34,6 @@ export const ProductPage = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [error, setError] = useState("");
 
-  // ====== Precios ======
   const priceNum = useMemo(() => Number(product?.price), [product]);
   const transferNum = useMemo(
     () => Number(product?.priceWithTransferDiscount ?? product?.price_with_transfer_discount),
@@ -50,14 +47,12 @@ export const ProductPage = () => {
 
   const priceText = !Number.isNaN(priceNum) ? `$${priceNum.toFixed(2)}` : product?.price || "";
 
-  // ====== Stock label ======
   const stockLabel = useMemo(() => {
     if (product?.stock == null) return "—";
     if (Number(product.stock) <= 0) return "Sin stock";
     return Number(product.stock) > 10 ? "Alto" : "Bajo";
   }, [product]);
 
-  // ====== Data fetch ======
   useEffect(() => {
     let ignore = false;
     const ctrl = new AbortController();
@@ -67,7 +62,6 @@ export const ProductPage = () => {
         setLoading(true);
         setError("");
 
-        // 1) Producto
         const { data } = await backend.get(`/products/${productId}`, {
           signal: ctrl.signal,
         });
@@ -82,7 +76,6 @@ export const ProductPage = () => {
 
         setProduct(data);
 
-        // 2) Imagen
         const idsResp = await backend.get(`/products/images/${productId}`, {
           signal: ctrl.signal,
         });
@@ -122,7 +115,6 @@ export const ProductPage = () => {
     };
   }, [productId]);
 
-  // ====== Estados UI ======
   if (loading) return <div className="max-w-6xl mx-auto p-6">Cargando…</div>;
 
   if (error) {
@@ -153,15 +145,13 @@ export const ProductPage = () => {
     );
   }
 
-  // obtenemos el animal con la misma lógica que categoría
   const animalData = getAnimalData(product);
 
-  // ====== UI ======
   return (
     <div className="max-w-7xl mx-auto p-10">
       <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
       <div className="grid grid-cols-1 md:grid-cols-13 gap-8">
-        {/* LEFT: imagen + pagos */}
+        
         <div className="md:col-span-7">
           <div className="w-full overflow-hidden rounded-xl bg-white border border-gray-200">
             <img
@@ -174,7 +164,6 @@ export const ProductPage = () => {
             />
           </div>
 
-          {/* Medios de pago */}
           <div className="mt-6 flex flex-col">
             <p className="text-sm text-gray-600 mb-3">Medios de pago aceptados</p>
             <img
@@ -187,7 +176,6 @@ export const ProductPage = () => {
           </div>
         </div>
 
-        {/* RIGHT: info ampliada */}
         <div className="md:col-span-6 flex flex-col gap-5">
           <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
             {product.name}
@@ -209,7 +197,6 @@ export const ProductPage = () => {
             <p className="text-3xl font-extrabold text-emerald-600">{priceText}</p>
           )}
 
-          {/* Categoría y Animal */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
             <div>
               <p className="text-gray-500 text-sm">Categoría</p>
@@ -239,8 +226,6 @@ export const ProductPage = () => {
           </div>
 
 
-
-          {/* Stock */}
           <div className="mt-2">
             <p className="text-gray-500 text-sm">Disponibilidad</p>
             {stockLabel === "Sin stock" ? (
@@ -258,7 +243,6 @@ export const ProductPage = () => {
             )}
           </div>
 
-          {/* Acciones */}
           <div className="mt-2 flex gap-3">
             {user?.profile?.role === "USER" 
               ? <ConfirmBuyComponent product={product} /> 

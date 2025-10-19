@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { backend } from "../api/backend"; // <-- ajusta si tu archivo está en otra ruta
+import { backend } from "../api/backend"; 
 import AnimalChipsSelector from "../components/AnimalChipsSelector";
 
 const ENDPOINTS = {
@@ -8,7 +8,7 @@ const ENDPOINTS = {
   categories: "/categories",
   products: "/products",
   byId: (id) => `/products/${id}`,
-  uploadImage: (productId) => `/products/images/${productId}`, // POST multipart { file }
+  uploadImage: (productId) => `/products/images/${productId}`, 
 };
 
 const NewProductPage = () => {
@@ -17,33 +17,27 @@ const NewProductPage = () => {
 
   const isEditing = productUrlParamId?.length > 0
 
-  // Acción: crear | editar | eliminar
   const [action, setAction] = useState(isEditing ? "editar" : "crear");
   const isCreate = action === "crear";
   const isEdit = action === "editar";
   const isDelete = action === "eliminar";
 
-  // Form state
   const [productId, setProductId] = useState(isEditing ? productUrlParamId : "");
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [animalIds, setAnimalIds] = useState([]); // multi
+  const [animalIds, setAnimalIds] = useState([]); 
 
-  // Imágenes
   const [files, setFiles] = useState([]);
 
-  // Combos
   const [animals, setAnimals] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // UI
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Cargo combos
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -70,7 +64,6 @@ const NewProductPage = () => {
     }
   }, [productId])
 
-  // Habilitación del botón
   const canSubmit = useMemo(() => {
     if (isCreate)
       return (
@@ -84,7 +77,6 @@ const NewProductPage = () => {
     return false;
   }, [isCreate, isEdit, isDelete, name, price, stock, categoryId, animalIds, productId]);
 
-  // Files
   const onFilesChange = (e) => {
     const picked = Array.from(e.target.files || [])
       .filter((f) => f.type.startsWith("image/"))
@@ -92,7 +84,6 @@ const NewProductPage = () => {
     setFiles(picked);
   };
 
-  // Cargar producto (editar)
   const loadProduct = async () => {
     if (!productId) return;
     setError("");
@@ -111,7 +102,6 @@ const NewProductPage = () => {
     }
   };
 
-  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -124,7 +114,7 @@ const NewProductPage = () => {
       setSubmitting(true);
 
       if (isCreate) {
-        // 1) Crear
+       
         const payload = {
           name: name.trim(),
           price: Number(price),
@@ -137,10 +127,9 @@ const NewProductPage = () => {
         const newId = Number(created?.id ?? created?.productId);
         if (!Number.isFinite(newId)) throw new Error("ID de producto inválido al crear.");
 
-        // 2) Subir imágenes
         for (const file of files) {
           const fd = new FormData();
-          fd.append("file", file); // nombre que espera tu back
+          fd.append("file", file); 
           await backend.post(ENDPOINTS.uploadImage(newId), fd, {
             headers: { "Content-Type": "multipart/form-data" },
           });
@@ -207,8 +196,7 @@ const NewProductPage = () => {
         </header>
 
         <form onSubmit={handleSubmit} className="grid gap-3 md:gap-4 max-w-[520px]">
-          {/* Acción */}
-          {/* Campos (no en eliminar) */}
+        
           {!isDelete && (
             <>
               <label className="flex flex-col">
