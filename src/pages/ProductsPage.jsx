@@ -22,9 +22,8 @@ export const ProductsPage = () => {
     getProducts(); // trae todo del back
   }, []);
 
-  // ====== Helpers para leer datos con distintos formatos ======
   const getAnimalNames = (p) => {
-    // p.animals: [{name:'Perro'}] o ['Perro'] | p.animal: {name:'Perro'} o 'Perro'
+
     const list = [];
     if (Array.isArray(p?.animals)) {
       for (const a of p.animals) {
@@ -51,7 +50,6 @@ export const ProductsPage = () => {
     return isNaN(n) ? null : n;
   };
 
-  // ====== Opciones dinámicas para los selects ======
   const animalOptions = useMemo(() => {
     const set = new Set();
     products.forEach((p) => getAnimalNames(p).forEach((n) => n && set.add(n)));
@@ -67,29 +65,28 @@ export const ProductsPage = () => {
     return Array.from(set).sort();
   }, [products]);
 
-  // ====== Filtrado ======
   const filtered = useMemo(() => {
     const qNorm = q.trim().toLowerCase();
 
     return products.filter((p) => {
-      // nombre
+  
       const name = (p?.name || "").toLowerCase();
       if (qNorm && !name.includes(qNorm)) return false;
 
-      // animal
+      
       if (animal) {
         const names = getAnimalNames(p).map((s) => s.toLowerCase());
         console.log(names,animal.toLowerCase())
         if (!names.includes(animal.toLowerCase())) return false;
       }
 
-      // categoría
+      
       if (category) {
         const c = getCategoryName(p);
         if (!c || c.toLowerCase() !== category.toLowerCase()) return false;
       }
 
-      // rango de precio
+     
       const price = getPriceNumber(p);
       if (price != null) {
         if (minPrice !== "" && price < Number(minPrice)) return false;
@@ -111,12 +108,11 @@ export const ProductsPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* ====== SIDEBAR ====== */}
+        
         <aside className="md:col-span-3">
           <div className="sticky top-4">
             <h2 className="text-xl font-bold mb-4">Filtrar</h2>
 
-            {/* Buscar */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
                 Buscar productos
@@ -130,7 +126,6 @@ export const ProductsPage = () => {
               />
             </div>
 
-            {/* Categoría */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Categoría</label>
               <select
@@ -147,7 +142,6 @@ export const ProductsPage = () => {
               </select>
             </div>
 
-            {/* Animal */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Animal</label>
               <select
@@ -164,7 +158,6 @@ export const ProductsPage = () => {
               </select>
             </div>
 
-            {/* Rango de precio */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
                 Precio (mín–máx)
@@ -189,7 +182,6 @@ export const ProductsPage = () => {
               </div>
             </div>
 
-            {/* Limpiar */}
             <button
               onClick={clearFilters}
               className="w-full border rounded-md px-3 py-2 font-medium hover:bg-gray-50"
@@ -199,7 +191,6 @@ export const ProductsPage = () => {
           </div>
         </aside>
 
-        {/* ====== LISTA ====== */}
         <section className="md:col-span-9">
           <div className="flex items-baseline justify-between mb-4">
             <h1 className="text-2xl font-bold">Productos</h1>

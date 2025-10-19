@@ -11,12 +11,10 @@ export const HomePage = () => {
   const { user } = useAuthContext();
   const isAdmin = user?.profile?.role === "ADMIN" || user?.role === "ADMIN";
 
-  // Traigo productos al montar
   useEffect(() => {
     getProducts();
   }, []);
 
-  // Muestro los primeros 4 en la home
   const featured = (products ?? []).slice(0, 4);
 
   return (

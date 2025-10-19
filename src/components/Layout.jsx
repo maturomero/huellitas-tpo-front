@@ -1,24 +1,20 @@
 import React from "react";
 import { useAuthContext } from '../contexts/AuthContext'
-//import { Outlet } from "react-router"; chat gpt recomendia el de abajo je;
-
 import { BrowserRouter, Routes, Route, Outlet, NavLink, useNavigate } from "react-router-dom";
 
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
-  const { status, user, logout } = useAuthContext()
-  // arriba del return, dentro del componente Layout
-const EMAIL = "petshophuellitas04@gmail.com";      // ← cambialo por el tuyo
+const { status, user, logout } = useAuthContext()
+  
+const EMAIL = "petshophuellitas04@gmail.com";      
 const subject = encodeURIComponent("Consulta desde la web");
 const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
 
   return (
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
-        {/* HEADER */}
-        <header className="py-6 flex justify-between items-center">
-          {/* Izquierda: logo + marca */}
+        <header className="py-6 flex justify-between items-center">       
           <div className="flex items-center space-x-3">
             <a href = "/">
             <img
@@ -32,7 +28,6 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
             </a>
           </div>
 
-          {/* Centro/Derecha: nav + carrito */}
           <div className="flex items-center space-x-8">
             <nav className="hidden md:flex space-x-8">
               <NavLink to="/" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
@@ -54,17 +49,6 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
                 </NavLink>
               )}
             </nav>
-
-
-
-            {/*<button className="relative text-text-light">
-              <span className="material-icons">shopping_cart</span>
-              {/* badge opcional
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
-                0
-              </span>
-              </button>
-              */}
             
             {status === 'authenticated' && (
               <>
@@ -77,25 +61,22 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
 
           </div>
 
-          {/* Menú móvil */}
           <button className="md:hidden text-text-light">
             <span className="material-icons">menu</span>
           </button>
         </header>
 
-        {/* CONTENIDO */}
         <main className="flex-1">
           <Outlet />
         </main>
 
-        {/* FOOTER */}
         <footer className="text-center py-8 border-t border-gray-200">
           <p className="text-subtext-light">
             © 2025 Huellitas PetShop. Todos los derechos reservados.
           </p>
 
           <div className="flex justify-center space-x-4 mt-4">
-            {/* Facebook - abre en pestaña nueva */}
+           
             <a
               href="https://www.facebook.com/profile.php?id=61581743836499"
               target="_blank"
@@ -113,21 +94,19 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
               </svg>
             </a>
 
-            {/* Correo - reemplaza el "Twitter" por un mailto */}
             <a
               href={`mailto:${EMAIL}?subject=${subject}&body=${body}`}
               aria-label="Enviar correo"
               className="text-subtext-light hover:text-primary transition-colors"
               title={`Escribir a ${EMAIL}`}
             >
-              {/* Ícono de sobre (email) */}
+              
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M1.5 8.67V18A2.25 2.25 0 003.75 20.25h16.5A2.25 2.25 0 0022.5 18V8.67l-9.33 5.6a2.25 2.25 0 01-2.34 0L1.5 8.67z"/>
                 <path d="M22.5 6.75v-.008A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.742v.008l9.33 5.6a2.25 2.25 0 002.34 0l9.33-5.6z"/>
               </svg>
             </a>
 
-            {/* Instagram - abre en pestaña nueva */}
             <a
               href="https://www.instagram.com/petshophuellitas04/"
               target="_blank"

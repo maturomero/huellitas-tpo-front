@@ -5,7 +5,6 @@ import { useAuthContext } from "../contexts/AuthContext";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
 import { detectMime } from "../helpers/detectMime"
 
-// Placeholder inline (no depende de /public)
 const FALLBACK =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -29,7 +28,6 @@ export const ProductCard = ({ product, getProducts }) => {
 
   const goDetail = () => navigate(`/productos/${product.id}`);
 
-  // Precios
   const priceNum = Number(product?.price);
   const transferNum = Number(
     product?.priceWithTransferDiscount ?? product?.price_with_transfer_discount
@@ -44,7 +42,6 @@ export const ProductCard = ({ product, getProducts }) => {
     ? `$${priceNum.toFixed(2)}`
     : product?.price || "";
 
-  // id que pueda venir en el listado, en cualquiera de las formas
   const firstIdFromList =
     product?.imageIds?.[0] ?? product?.productImages?.[0]?.id ?? null;
 
@@ -55,18 +52,17 @@ export const ProductCard = ({ product, getProducts }) => {
     const ctrl = new AbortController();
 
     async function fetchFirstImageId(productId) {
-      // hasta 10 intentos con backoff (≈8–10s total)
+    
       for (let i = 0; i < 10; i++) {
         try {
           const { data } = await backend.get(`/products/images/${productId}`, {
             signal: ctrl.signal,
-            params: { ts: Date.now() }, // anti-cache
+            params: { ts: Date.now() }, 
           });
           if (ignore) return null;
           const ids = Array.isArray(data) ? data : [];
           if (ids.length) return ids[0];
         } catch {
-          // seguimos intentando
         }
         await sleep(500 + i * 300);
       }
@@ -78,13 +74,12 @@ export const ProductCard = ({ product, getProducts }) => {
         try {
           const { data } = await backend.get(`/products/images`, {
             signal: ctrl.signal,
-            params: { id, ts: Date.now() }, // anti-cache
+            params: { id, ts: Date.now() }, 
           });
           if (ignore) return null;
           const b64 = data?.file;
           if (b64) return b64;
         } catch {
-          // seguimos intentando
         }
         await sleep(500 + i * 300);
       }
@@ -99,7 +94,7 @@ export const ProductCard = ({ product, getProducts }) => {
         if (!imageId && product?.id) {
           imageId = await fetchFirstImageId(product.id);
         }
-        if (!imageId) return; // no hay imagen asociada todavía
+        if (!imageId) return; 
 
         const base64 = await fetchBase64ById(imageId);
         if (!base64) return;
@@ -111,7 +106,6 @@ export const ProductCard = ({ product, getProducts }) => {
           setSrc(`data:${mime};base64,${base64}`);
         }
       } catch {
-        // usamos fallback
       }
     }
 
@@ -139,8 +133,6 @@ const handleDelete = async()=> {
       :null
       }
 
-      
-      {/* Imagen */}
       <div
         onClick={goDetail}
         className="relative w-full cursor-pointer overflow-hidden aspect-[4/3] bg-white"
@@ -156,7 +148,6 @@ const handleDelete = async()=> {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       </div>
 
-      {/* Contenido */}
       <div className="flex flex-col items-center gap-2 p-4 text-center">
         <h3
           onClick={goDetail}

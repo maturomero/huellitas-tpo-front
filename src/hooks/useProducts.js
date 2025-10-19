@@ -8,7 +8,6 @@ function mapProduct(p) {
     name: p.name,
     price: p.price,
     imageIds: Array.isArray(p.productImages) ? p.productImages.map(img => img.id) : [],
-    // extras si te sirven:
     stock: p.stock,
     status: p.status,
     priceWithTransferDiscount: p.priceWithTransferDiscount,

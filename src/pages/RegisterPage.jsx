@@ -58,10 +58,8 @@ export const RegisterPage = () => {
       <div className="flex flex-col gap-6 justify-center items-center w-full">
         <h2 className="font-bold text-3xl">Crear cuenta</h2>
 
-        {/* Error global */}
         {error && <p className="text-sm text-red-600 -mt-2">{error}</p>}
 
-        {/* Nombre */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Nombre Completo</label>
           <input
@@ -73,7 +71,6 @@ export const RegisterPage = () => {
           />
         </div>
 
-        {/* Email */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Email</label>
           <input
@@ -91,7 +88,6 @@ export const RegisterPage = () => {
           )}
         </div>
 
-        {/* Contraseña */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Contraseña</label>
           <input
@@ -103,7 +99,6 @@ export const RegisterPage = () => {
           />
         </div>
 
-        {/* Repetir contraseña */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Repetir contraseña</label>
           <input
@@ -136,7 +131,7 @@ export const RegisterPage = () => {
   );
 };
 
-// <esto que onda>
+
 
 
 

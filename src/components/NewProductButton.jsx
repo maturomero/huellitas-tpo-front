@@ -2,15 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 
-/**
- * Botón flotante para admins.
- * Props:
- * - to: ruta destino (default: "/productos/nuevo")
- * - title: tooltip/label (default: "Nuevo producto")
- * - topClass: clase Tailwind para la posición vertical (default: "top-[45%]")
- * - hideOnMobile: true para ocultar en mobile (default: false)
- * - className: clases extra
- */
 export default function AdminFab({
   to = "/productos/nuevo",
   title = "Nuevo producto",
@@ -28,8 +19,8 @@ export default function AdminFab({
       aria-label={title}
       title={title}
       className={[
-        "fixed right-6",         // a la derecha
-        topClass,                // altura (ej: 'top-1/2' o 'top-[45%]')
+        "fixed right-6",         
+        topClass,                
         "-translate-y-1/2",
         "z-40 inline-flex items-center justify-center",
         "w-11 h-11 rounded-full bg-primary text-white",
