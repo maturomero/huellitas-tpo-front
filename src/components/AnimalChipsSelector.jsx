@@ -1,8 +1,8 @@
 import React from "react";
 
 export default function AnimalChipsSelector({
-  options = [],   // [{ id, name }]
-  value = [],     // [ids]
+  options = [],   
+  value = [],     
   onChange,
   label = "Animal(es)",
 }) {
@@ -24,7 +24,7 @@ export default function AnimalChipsSelector({
       <select
         defaultValue=""
         onChange={add}
-        className="h-12 md:h-14 rounded-lg border border-[#dce5de] px-3 bg-white"
+        className="h-12 md:h-14 rounded-lg border border-[#dce5de] px-3 bg-white cursor-pointer"
       >
         <option value="">Añadir animal…</option>
         {options

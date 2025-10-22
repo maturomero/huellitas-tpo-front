@@ -238,7 +238,7 @@ const NewProductPage = () => {
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="h-12 md:h-14 rounded-lg border border-[#dce5de] px-3 bg-white"
+                  className="h-12 md:h-14 rounded-lg border border-[#dce5de] px-3 bg-white cursor-pointer"
                 >
                   <option value="">Seleccionar…</option>
                   {categories.map((c) => (
@@ -249,16 +249,17 @@ const NewProductPage = () => {
                 </select>
               </label>
 
-              <AnimalChipsSelector
+              <AnimalChipsSelector 
                 options={animals}
                 value={animalIds}
                 onChange={setAnimalIds}
+                
               />
 
               <p className="text-sm md:text-base">Estado: Activo</p>
 
               <div className="flex flex-col gap-4">
-                <label className="flex flex-col">
+                <label className="flex flex-col cursor-pointer">
                   <span className="text-sm md:text-base font-medium pb-2">
                     Imágen
                   </span>

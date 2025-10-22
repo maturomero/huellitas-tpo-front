@@ -190,7 +190,7 @@ export const ProductPage = () => {
                 ${transferNum.toFixed(2)}
               </span>
               <span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
-                Transferencia
+                Abonando con transferencia
               </span>
             </div>
           ) : (
