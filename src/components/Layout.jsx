@@ -53,7 +53,7 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
             {status === 'authenticated' && (
               <>
                 <p className="text-sm text-gray-600">Hola {user.profile.fullname}!</p>
-                <button onClick={logout}>
+                <button className="cursor-pointer" onClick={logout}>
                   Salir
                 </button>
               </>

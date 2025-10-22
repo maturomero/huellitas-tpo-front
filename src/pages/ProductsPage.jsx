@@ -131,7 +131,7 @@ export const ProductsPage = () => {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 bg-white"
+                className="w-full border rounded-md px-3 py-2 bg-white cursor-pointer"
               >
                 <option value="">Todas</option>
                 {categoryOptions.map((c) => (
@@ -147,7 +147,7 @@ export const ProductsPage = () => {
               <select
                 value={animal}
                 onChange={(e) => setAnimal(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 bg-white"
+                className="w-full border rounded-md px-3 py-2 bg-white cursor-pointer"
               >
                 <option value="">Todos</option>
                 {animalOptions.map((a) => (
@@ -184,7 +184,7 @@ export const ProductsPage = () => {
 
             <button
               onClick={clearFilters}
-              className="w-full border rounded-md px-3 py-2 font-medium hover:bg-gray-50"
+              className="w-full border rounded-md px-3 py-2 font-medium hover:bg-gray-50 cursor-pointer"
             >
               Limpiar filtros
             </button>
