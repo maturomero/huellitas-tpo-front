@@ -1,21 +1,22 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { backend } from "../api/backend"; 
+import { backend } from "../api/backend";
 import AnimalChipsSelector from "../components/AnimalChipsSelector";
+import toast from "react-hot-toast"; // ✅ agregado
 
 const ENDPOINTS = {
   animals: "/animals",
   categories: "/categories",
   products: "/products",
   byId: (id) => `/products/${id}`,
-  uploadImage: (productId) => `/products/images/${productId}`, 
+  uploadImage: (productId) => `/products/images/${productId}`,
 };
 
 const NewProductPage = () => {
-  const { productId: productUrlParamId } = useParams()
+  const { productId: productUrlParamId } = useParams();
   const navigate = useNavigate();
 
-  const isEditing = productUrlParamId?.length > 0
+  const isEditing = productUrlParamId?.length > 0;
 
   const [action, setAction] = useState(isEditing ? "editar" : "crear");
   const isCreate = action === "crear";
@@ -27,8 +28,7 @@ const NewProductPage = () => {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [animalIds, setAnimalIds] = useState([]); 
-
+  const [animalIds, setAnimalIds] = useState([]);
   const [files, setFiles] = useState([]);
 
   const [animals, setAnimals] = useState([]);
@@ -53,16 +53,16 @@ const NewProductPage = () => {
         if (!ignore) setError("No se pudieron cargar animales/categorías.");
       }
     })();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   useEffect(() => {
-    console.log('intentando editar')
-    if (action === 'editar') {
-      console.log('cargando producto', productId)
-      loadProduct()
+    if (action === "editar") {
+      loadProduct();
     }
-  }, [productId])
+  }, [productId]);
 
   const canSubmit = useMemo(() => {
     if (isCreate)
@@ -107,6 +107,7 @@ const NewProductPage = () => {
     setError("");
     if (!canSubmit) {
       setError("Completá los campos obligatorios.");
+      toast.error("Completá los campos obligatorios."); 
       return;
     }
 
@@ -114,7 +115,6 @@ const NewProductPage = () => {
       setSubmitting(true);
 
       if (isCreate) {
-       
         const payload = {
           name: name.trim(),
           price: Number(price),
@@ -129,12 +129,13 @@ const NewProductPage = () => {
 
         for (const file of files) {
           const fd = new FormData();
-          fd.append("file", file); 
+          fd.append("file", file);
           await backend.post(ENDPOINTS.uploadImage(newId), fd, {
             headers: { "Content-Type": "multipart/form-data" },
           });
         }
 
+        toast.success("Producto creado con éxito"); 
         navigate("/productos");
         return;
       }
@@ -161,6 +162,7 @@ const NewProductPage = () => {
           }
         }
 
+        toast.success("Producto actualizado con éxito"); 
         navigate("/productos");
         return;
       }
@@ -169,12 +171,15 @@ const NewProductPage = () => {
         const idNum = Number(productId);
         if (!Number.isFinite(idNum)) throw new Error("ID inválido.");
         await backend.delete(ENDPOINTS.byId(idNum));
+        toast.success("Producto eliminado con éxito 🗑️"); 
         navigate("/productos");
         return;
       }
     } catch (e) {
       console.error(e);
-      setError(e?.response?.data?.message || "Operación fallida.");
+      const msg = e?.response?.data?.message || "Operación fallida.";
+      setError(msg);
+      toast.error(msg); 
     } finally {
       setSubmitting(false);
     }
@@ -183,20 +188,28 @@ const NewProductPage = () => {
   return (
     <div className="min-h-[calc(100vh-96px-169px)] bg-white">
       <div className="max-w-[960px] mx-auto px-4 md:px-10 py-6">
-        <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-sm text-[#64876e] mb-3 cursor-pointer"
+        >
+          ← Volver
+        </button>
         <header className="py-2 md:py-4 mb-8">
           <h1 className="text-[#111713] text-[28px] md:text-[32px] font-bold leading-tight">
             Administración de Productos – Huellitas PetShop
           </h1>
-          {isEditing
-            ? <p className="mt-2">Editando producto <b>{name}</b></p>
-            : <p className="mt-2">Estás creando un nuevo producto <b>{name}</b></p>
-          }
-          
+          {isEditing ? (
+            <p className="mt-2">
+              Editando producto <b>{name}</b>
+            </p>
+          ) : (
+            <p className="mt-2">
+              Estás creando un nuevo producto <b>{name}</b>
+            </p>
+          )}
         </header>
 
         <form onSubmit={handleSubmit} className="grid gap-3 md:gap-4 max-w-[520px]">
-        
           {!isDelete && (
             <>
               <label className="flex flex-col">
@@ -249,20 +262,17 @@ const NewProductPage = () => {
                 </select>
               </label>
 
-              <AnimalChipsSelector 
+              <AnimalChipsSelector
                 options={animals}
                 value={animalIds}
                 onChange={setAnimalIds}
-                
               />
 
               <p className="text-sm md:text-base">Estado: Activo</p>
 
               <div className="flex flex-col gap-4">
                 <label className="flex flex-col cursor-pointer">
-                  <span className="text-sm md:text-base font-medium pb-2">
-                    Imágen
-                  </span>
+                  <span className="text-sm md:text-base font-medium pb-2">Imágen</span>
                   <div className="rounded-lg border-2 border-dashed border-[#dce5de] p-6">
                     <input
                       type="file"
@@ -271,9 +281,7 @@ const NewProductPage = () => {
                       onChange={onFilesChange}
                       className="block w-full text-sm"
                     />
-                    <p className="text-xs text-gray-600 mt-2">
-                      Elegí archivo
-                    </p>
+                    <p className="text-xs text-gray-600 mt-2">Elegí archivo</p>
 
                     {files.length > 0 && (
                       <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -322,7 +330,13 @@ const NewProductPage = () => {
                 disabled={!canSubmit || submitting}
                 className="h-10 px-4 rounded-lg bg-[#1cc44c] text-[#111713] text-sm font-bold disabled:opacity-60"
               >
-                {submitting ? (isEdit ? "Guardando…" : "Creando…") : (isEdit ? "Guardar cambios" : "Crear")}
+                {submitting
+                  ? isEdit
+                    ? "Guardando…"
+                    : "Creando…"
+                  : isEdit
+                  ? "Guardar cambios"
+                  : "Crear"}
               </button>
             )}
           </div>
@@ -333,3 +347,4 @@ const NewProductPage = () => {
 };
 
 export default NewProductPage;
+
