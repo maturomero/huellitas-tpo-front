@@ -14,6 +14,7 @@ import AdminRoutes from './AdminRoutes'
 import { useAuthContext } from "../contexts/AuthContext";
 import LoadingPage from "../pages/LoadingPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
+import PaymentPage from "../pages/PaymentPage";
 
 
 export default function AppRouter() {
@@ -37,6 +38,7 @@ export default function AppRouter() {
         <Route element={<PrivateRoutes />}>
           <Route path="/orden" element={<OrderPage />} />
           <Route path="/orden/:id" element={<OrderDetailPage />} />
+          <Route path="/pago" element={<PaymentPage />} />
 
           <Route element={<AdminRoutes />}>
             <Route path="/productos/:productId/editar" element={<NewProductPage />} />
