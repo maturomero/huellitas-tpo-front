@@ -9,7 +9,11 @@ export const useAuthContext = () => {
 
 export const AuthProvider = ({ children }) => {
   const [status, setStatus] = useState('checking')
-  const [user, setUser] = useState(window.localStorage.getItem('user') ? JSON.parse(window.localStorage.getItem('user')) : null)
+  const [user, setUser] = useState(
+    window.localStorage.getItem('user')
+      ? JSON.parse(window.localStorage.getItem('user'))
+      : null
+  )
 
   useEffect(() => {
     validateSession()
@@ -44,8 +48,10 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userData)
       setStatus("authenticated")
+      return true   // ✅ login exitoso
     } catch (error) {
       logout()
+      return false  // ❌ credenciales inválidas
     }
   }
 

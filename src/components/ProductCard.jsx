@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { backend } from "../api/backend";
 import { useAuthContext } from "../contexts/AuthContext";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
-import { detectMime } from "../helpers/detectMime"
+import { detectMime } from "../helpers/detectMime";
+import toast from "react-hot-toast"; 
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -22,7 +23,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const ProductCard = ({ product, getProducts }) => {
   const { user } = useAuthContext();
-
   const navigate = useNavigate();
   if (!product) return null;
 
@@ -46,24 +46,23 @@ export const ProductCard = ({ product, getProducts }) => {
     product?.imageIds?.[0] ?? product?.productImages?.[0]?.id ?? null;
 
   const [src, setSrc] = useState(FALLBACK);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let ignore = false;
     const ctrl = new AbortController();
 
     async function fetchFirstImageId(productId) {
-    
       for (let i = 0; i < 10; i++) {
         try {
           const { data } = await backend.get(`/products/images/${productId}`, {
             signal: ctrl.signal,
-            params: { ts: Date.now() }, 
+            params: { ts: Date.now() },
           });
           if (ignore) return null;
           const ids = Array.isArray(data) ? data : [];
           if (ids.length) return ids[0];
-        } catch {
-        }
+        } catch {}
         await sleep(500 + i * 300);
       }
       return null;
@@ -74,13 +73,12 @@ export const ProductCard = ({ product, getProducts }) => {
         try {
           const { data } = await backend.get(`/products/images`, {
             signal: ctrl.signal,
-            params: { id, ts: Date.now() }, 
+            params: { id, ts: Date.now() },
           });
           if (ignore) return null;
           const b64 = data?.file;
           if (b64) return b64;
-        } catch {
-        }
+        } catch {}
         await sleep(500 + i * 300);
       }
       return null;
@@ -94,7 +92,7 @@ export const ProductCard = ({ product, getProducts }) => {
         if (!imageId && product?.id) {
           imageId = await fetchFirstImageId(product.id);
         }
-        if (!imageId) return; 
+        if (!imageId) return;
 
         const base64 = await fetchBase64ById(imageId);
         if (!base64) return;
@@ -105,8 +103,7 @@ export const ProductCard = ({ product, getProducts }) => {
           const mime = detectMime(base64) || "image/jpeg";
           setSrc(`data:${mime};base64,${base64}`);
         }
-      } catch {
-      }
+      } catch {}
     }
 
     load();
@@ -117,21 +114,35 @@ export const ProductCard = ({ product, getProducts }) => {
     };
   }, [product?.id, firstIdFromList]);
 
-const handleDelete = async()=> { 
-  await backend.delete(`/products/${product.id}`)
-  await getProducts()
-}
+  const handleDelete = async () => {
+    if (deleting) return;
+    try {
+      setDeleting(true);
+      await backend.delete(`/products/${product.id}`);
+      await getProducts();
+      toast.success("Producto eliminado correctamente"); 
+    } catch (e) {
+      const msg = e?.response?.data?.message || "No se pudo eliminar el producto.";
+      toast.error(msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      {user?.profile?.role === "ADMIN"
-      ?(<div className="w-full flex justify-end">
-        <button onClick={handleDelete} className="bg-red-400 size-8 rounded-full flex items-center justify-center m-4 mb-2 cursor-pointer hover:opacity-90">
-          <span className="text-white font-medium">x</span>
-        </button>
-      </div>)
-      :null
-      }
+      {user?.profile?.role === "ADMIN" ? (
+        <div className="w-full flex justify-end">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="bg-red-400 size-8 rounded-full flex items-center justify-center m-4 mb-2 cursor-pointer hover:opacity-90 disabled:opacity-60"
+            title={deleting ? "Eliminando..." : "Eliminar"}
+          >
+            <span className="text-white font-medium">{deleting ? "…" : "x"}</span>
+          </button>
+        </div>
+      ) : null}
 
       <div
         onClick={goDetail}
@@ -182,18 +193,17 @@ const handleDelete = async()=> {
         )}
 
         <div className="flex items-center gap-2 w-full mt-2">
-          {user?.profile?.role === "USER" ? <ConfirmBuyComponent product={product} /> : null}
-          {user?.profile?.role === "ADMIN" 
-            ? (
-              <Link 
-                to={`/productos/${product.id}/editar`}
-                className="flex-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-              >
-                Editar
-              </Link>
-            )
-            : null
-          }
+          {user?.profile?.role === "USER" ? (
+            <ConfirmBuyComponent product={product} />
+          ) : null}
+          {user?.profile?.role === "ADMIN" ? (
+            <Link
+              to={`/productos/${product.id}/editar`}
+              className="flex-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            >
+              Editar
+            </Link>
+          ) : null}
         </div>
       </div>
     </li>
