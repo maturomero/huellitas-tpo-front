@@ -2,8 +2,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import AppRouter from "./router/AppRouter.jsx";
-import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { Toaster, toast } from "react-hot-toast";
+import { Provider } from 'react-redux'
+import { store } from './redux/store'
 
 // 🔧 Parche global: evita toasts superpuestos
 (() => {
@@ -27,7 +28,7 @@ import { Toaster, toast } from "react-hot-toast";
 })();
 
 createRoot(document.getElementById("root")).render(
-  <AuthProvider>
+  <Provider store={store} >
     <BrowserRouter>
       <Toaster
         position="bottom-left"
@@ -49,7 +50,7 @@ createRoot(document.getElementById("root")).render(
       />
       <AppRouter />
     </BrowserRouter>
-  </AuthProvider>
+  </Provider>
 );
 
 

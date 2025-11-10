@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom"
-import { useAuthContext } from "../contexts/AuthContext"
+import { useSelector } from "react-redux"
 
 export default function PublicRoutes() {
-  const { status } = useAuthContext()
-
+  const { status } = useSelector((state) => state.auth)
+  
   return <Outlet />
 }

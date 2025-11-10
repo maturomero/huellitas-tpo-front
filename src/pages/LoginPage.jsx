@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
+import { useSelector, useDispatch } from 'react-redux'
+import { login } from "../redux/authSlice";
+
 export const LoginPage = () => {
-  const { login, status } = useAuthContext();
+  const { status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -22,11 +25,11 @@ export const LoginPage = () => {
 
     try {
       setSubmitting(true);
-      const ok = await login(email, password); // ahora devuelve true/false
-
-      if (!ok) {
+      const result = await dispatch(login({ email, password }))
+      
+      if (result.type === 'auth/login/rejected') {
         toast.error("Uno de los campos es incorrecto");
-        return;
+        return
       }
 
       toast.success("Inicio de sesión exitoso 👋");

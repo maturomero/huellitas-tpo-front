@@ -3,12 +3,12 @@ import useProducts from "../hooks/useProducts";
 import { HeroSection } from "../components/home/HeroSection";
 import { ProductsGrid } from "../components/ProductsGrid";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
 import NewProductButton from "../components/NewProductButton";
+import { useSelector } from 'react-redux'
 
 export const HomePage = () => {
   const { products, getProducts } = useProducts();
-  const { user } = useAuthContext();
+  const { user } = useSelector((state) => state.auth)
   const isAdmin = user?.profile?.role === "ADMIN" || user?.role === "ADMIN";
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { Outlet, Navigate } from "react-router-dom"
-import { useAuthContext } from "../contexts/AuthContext"
+import { useSelector } from "react-redux"
 
 export default function PrivateRoutes() {
-  const { status } = useAuthContext()
+  const { status } = useSelector((state) => state.auth)
 
   if (status === 'not-authenticated') return <Navigate to="/login" />
 

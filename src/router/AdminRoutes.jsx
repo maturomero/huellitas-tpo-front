@@ -1,8 +1,8 @@
 import { Outlet, Navigate } from "react-router"
-import { useAuthContext } from "../contexts/AuthContext"
+import { useSelector } from 'react-redux'
 
 export default function AdminRoutes() {
-  const { user } = useAuthContext()
+  const { user } = useSelector((state) => state.auth)
   
   if (user?.profile?.role !== 'ADMIN') return <Navigate to="/" />
 

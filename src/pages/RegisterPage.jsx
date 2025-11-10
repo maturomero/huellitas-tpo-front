@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
+import { useSelector, useDispatch } from 'react-redux'
+import { register } from "../redux/authSlice";
+
 export const RegisterPage = () => {
-  const { register, status } = useAuthContext();
+  const { status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -38,7 +41,7 @@ export const RegisterPage = () => {
 
     try {
       setSubmitting(true);
-      await register({ fullName, email, password });
+      await dispatch(register({ fullName, email, password }));
       toast.success("Cuenta creada con éxito");
       // Redirección la maneja <Navigate /> cuando status cambia a 'authenticated'
     } catch (err) {

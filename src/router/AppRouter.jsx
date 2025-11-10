@@ -11,14 +11,20 @@ import { Layout } from "../components/Layout";
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
 import AdminRoutes from './AdminRoutes'
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
+import { validateSession } from '../redux/authSlice'
 import LoadingPage from "../pages/LoadingPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import PaymentPage from "../pages/PaymentPage";
-
+import { useEffect } from 'react'
 
 export default function AppRouter() {
-  const { status } = useAuthContext()
+  const { status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(validateSession())
+  }, [])
 
   if (status === 'checking') {
     return <LoadingPage />

@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { backend } from "../api/backend";
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function ConfirmBuyComponent({ product, label = "Comprar" }) {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user } = useSelector((state) => state.auth);
 
   const [isModalConfirmationOpen, setIsModalConfirmationOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");

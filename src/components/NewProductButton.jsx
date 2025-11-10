@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function AdminFab({
   to = "/productos/nuevo",
@@ -9,7 +9,7 @@ export default function AdminFab({
   hideOnMobile = false,
   className = "",
 }) {
-  const { user } = useAuthContext();
+  const { user } = useSelector((state) => state.auth);
   const isAdmin = user?.profile?.role === "ADMIN" || user?.role === "ADMIN";
   if (!isAdmin) return null;
 

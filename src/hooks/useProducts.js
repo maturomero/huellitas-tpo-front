@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { backend } from "../api/backend";
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector } from "react-redux";
 
 function mapProduct(p) {
   return {
@@ -20,7 +20,7 @@ function mapProduct(p) {
 
 export default function useProducts() {
   const [products, setProducts] = useState([]);
-  const {user} = useAuthContext()
+  const {user} = useSelector((state) => state.auth)
   const getProducts = () => {
     const url = user?.profile?.role == "ADMIN" ? "/products?sinStock=1":"/products?sinStock=0"
     backend.get(url).then(res => setProducts(res.data.map(mapProduct)));
