@@ -87,7 +87,7 @@ export default function PaymentPage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error en el pago. Inténtalo nuevamente ❌");
+      toast.error("Error en el pago. Inténtalo nuevamente");
     } finally {
       setLoading(false);
     }

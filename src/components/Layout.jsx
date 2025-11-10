@@ -1,15 +1,21 @@
 import React from "react";
-import { useAuthContext } from '../contexts/AuthContext'
 import { BrowserRouter, Routes, Route, Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux'
+import { authSlice } from '../redux/authSlice'
 
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
-const { status, user, logout } = useAuthContext()
+const { user, status } = useSelector((state) => state.auth)
+const dispatch = useDispatch()
   
 const EMAIL = "petshophuellitas04@gmail.com";      
 const subject = encodeURIComponent("Consulta desde la web");
 const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
+
+const handleLogout = () => {
+  dispatch(authSlice.actions.logout())
+}
 
   return (
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
@@ -53,7 +59,7 @@ const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
             {status === 'authenticated' && (
               <>
                 <p className="text-sm text-gray-600">Hola {user.profile.fullname}!</p>
-                <button className="cursor-pointer" onClick={logout}>
+                <button className="cursor-pointer" onClick={handleLogout}>
                   Salir
                 </button>
               </>

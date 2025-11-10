@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { backend } from "../api/backend";
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector } from 'react-redux'
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
 import { detectMime } from "../helpers/detectMime";
 import toast from "react-hot-toast"; 
@@ -22,7 +22,7 @@ const FALLBACK =
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const ProductCard = ({ product, getProducts }) => {
-  const { user } = useAuthContext();
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   if (!product) return null;
 

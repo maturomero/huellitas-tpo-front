@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { backend } from "../api/backend";
 import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
-import { useAuthContext } from "../contexts/AuthContext"
+import { useSelector } from "react-redux"
 
 import logo from "../assets/images/LOGO.jpg"; 
 
@@ -27,7 +27,7 @@ export const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
 
-  const { user } = useAuthContext()
+  const { user } = useSelector((state) => state.auth)
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
