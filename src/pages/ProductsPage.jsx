@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import useProducts from "../hooks/useProducts";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../redux/productsSlice";
 import ProductCard from "../components/ProductCard";
 import NewProductButton from "../components/NewProductButton";
 
@@ -9,7 +10,10 @@ function capitalizar(str) {
 }
 
 export const ProductsPage = () => {
-  const { products, getProducts } = useProducts();
+  const dispatch = useDispatch();
+  const products = useSelector((state) => state.products.items);
+  const loading = useSelector((state) => state.products.loading);
+  const getProducts = useCallback(() => dispatch(fetchProducts()), [dispatch]);
 
   // Filtros
   const [q, setQ] = useState("");
@@ -19,7 +23,7 @@ export const ProductsPage = () => {
   const [maxPrice, setMaxPrice] = useState("");
 
   useEffect(() => {
-    getProducts(); // trae todo del back
+    getProducts();
   }, []);
 
   const getAnimalNames = (p) => {
@@ -199,7 +203,9 @@ export const ProductsPage = () => {
             </span>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <p className="text-gray-600">Cargando productos…</p>
+            ) : filtered.length === 0 ? (
             <p className="text-gray-600">
               No se encontraron productos con esos filtros.
             </p>
