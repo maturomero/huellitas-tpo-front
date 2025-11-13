@@ -3,7 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { backend } from "../api/backend";
 import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
+import productsSlice from "../redux/productsSlice";
 
 import logo from "../assets/images/LOGO.jpg"; 
 
@@ -28,6 +29,8 @@ export const ProductPage = () => {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth)
+  const { currentProduct, items } = useSelector((state) => state.products)
+  const dispatch = useDispatch()
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
@@ -57,24 +60,25 @@ export const ProductPage = () => {
     let ignore = false;
     const ctrl = new AbortController();
 
+    if (!items.length) return
+
+    dispatch(productsSlice.actions.getProductById({ id: productId, raw: true }))    
+
     async function load() {
       try {
         setLoading(true);
         setError("");
 
-        const { data } = await backend.get(`/products/${productId}`, {
-          signal: ctrl.signal,
-        });
         if (ignore) return;
 
-        if (!data || Number(data.stock) === 0) {
+        if (!currentProduct || Number(currentProduct.stock) === 0) {
           setProduct(null);
           setImageUrl(null);
           setError("Este producto no se encuentra disponible.");
           return;
         }
 
-        setProduct(data);
+        setProduct(currentProduct);
 
         const idsResp = await backend.get(`/products/images/${productId}`, {
           signal: ctrl.signal,
@@ -113,7 +117,7 @@ export const ProductPage = () => {
       ignore = true;
       ctrl.abort();
     };
-  }, [productId]);
+  }, [productId, currentProduct, items]);
 
   if (loading) return <div className="max-w-6xl mx-auto p-6">Cargando…</div>;
 

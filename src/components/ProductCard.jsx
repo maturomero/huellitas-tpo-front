@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { backend } from "../api/backend";
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { deleteProduct } from "../redux/productsSlice";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
 import { detectMime } from "../helpers/detectMime";
 import toast from "react-hot-toast"; 
@@ -21,8 +22,9 @@ const FALLBACK =
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export const ProductCard = ({ product, getProducts }) => {
+export const ProductCard = ({ product }) => {
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
   const navigate = useNavigate();
   if (!product) return null;
 
@@ -118,8 +120,7 @@ export const ProductCard = ({ product, getProducts }) => {
     if (deleting) return;
     try {
       setDeleting(true);
-      await backend.delete(`/products/${product.id}`);
-      await getProducts();
+      dispatch(deleteProduct(product.id))
       toast.success("Producto eliminado correctamente"); 
     } catch (e) {
       const msg = e?.response?.data?.message || "No se pudo eliminar el producto.";
