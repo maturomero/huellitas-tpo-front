@@ -1,37 +1,48 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
 import { authSlice } from '../redux/authSlice'
+import { fetchProducts } from "../redux/productsSlice";
+import { fetchAnimals, fetchCategories } from "../redux/attributesSlice"
 
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
-const { user, status } = useSelector((state) => state.auth)
-const dispatch = useDispatch()
-  
-const EMAIL = "petshophuellitas04@gmail.com";      
-const subject = encodeURIComponent("Consulta desde la web");
-const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
+  const { user, status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
 
-const handleLogout = () => {
-  dispatch(authSlice.actions.logout())
-}
+  const EMAIL = "petshophuellitas04@gmail.com";
+  const subject = encodeURIComponent("Consulta desde la web");
+  const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
+
+  useEffect(() => {
+    dispatch(fetchAnimals())
+    dispatch(fetchCategories())
+  }, [])
+
+  useEffect(() => {
+    dispatch(fetchProducts({ isAdmin: user?.profile?.role === 'ADMIN' }))
+  }, [user])
+
+  const handleLogout = () => {
+    dispatch(authSlice.actions.logout())
+  }
 
   return (
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
-        <header className="py-6 flex justify-between items-center">       
+        <header className="py-6 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <a href = "/">
-            <img
-              src={logo}
-              alt="Huellitas PetShop"
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            </a>
-            <a href = "/">
-            <span className="text-2xl font-bold text-primary">Huellitas PetShop</span>
-            </a>
+            <Link to="/">
+              <img
+                src={logo}
+                alt="Huellitas PetShop"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            </Link>
+            <Link to="/">
+              <span className="text-2xl font-bold text-primary">Huellitas PetShop</span>
+            </Link>
           </div>
 
           <div className="flex items-center space-x-8">
@@ -55,7 +66,7 @@ const handleLogout = () => {
                 </NavLink>
               )}
             </nav>
-            
+
             {status === 'authenticated' && (
               <>
                 <p className="text-sm text-gray-600">Hola {user.profile.fullname}!</p>
@@ -82,7 +93,7 @@ const handleLogout = () => {
           </p>
 
           <div className="flex justify-center space-x-4 mt-4">
-           
+
             <a
               href="https://www.facebook.com/profile.php?id=61581743836499"
               target="_blank"
@@ -106,10 +117,10 @@ const handleLogout = () => {
               className="text-subtext-light hover:text-primary transition-colors"
               title={`Escribir a ${EMAIL}`}
             >
-              
+
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M1.5 8.67V18A2.25 2.25 0 003.75 20.25h16.5A2.25 2.25 0 0022.5 18V8.67l-9.33 5.6a2.25 2.25 0 01-2.34 0L1.5 8.67z"/>
-                <path d="M22.5 6.75v-.008A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.742v.008l9.33 5.6a2.25 2.25 0 002.34 0l9.33-5.6z"/>
+                <path d="M1.5 8.67V18A2.25 2.25 0 003.75 20.25h16.5A2.25 2.25 0 0022.5 18V8.67l-9.33 5.6a2.25 2.25 0 01-2.34 0L1.5 8.67z" />
+                <path d="M22.5 6.75v-.008A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.742v.008l9.33 5.6a2.25 2.25 0 002.34 0l9.33-5.6z" />
               </svg>
             </a>
 

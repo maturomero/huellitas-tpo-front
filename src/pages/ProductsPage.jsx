@@ -10,10 +10,8 @@ function capitalizar(str) {
 }
 
 export const ProductsPage = () => {
-  const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
   const loading = useSelector((state) => state.products.loading);
-  const getProducts = useCallback(() => dispatch(fetchProducts()), [dispatch]);
 
   // Filtros
   const [q, setQ] = useState("");
@@ -21,10 +19,6 @@ export const ProductsPage = () => {
   const [category, setCategory] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-
-  useEffect(() => {
-    getProducts();
-  }, []);
 
   const getAnimalNames = (p) => {
 
@@ -212,7 +206,7 @@ export const ProductsPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} getProducts={getProducts} />
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           )}

@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import cardValidator from "card-validator";
 import { backend } from "../api/backend";
-import toast from "react-hot-toast"; // ✅ IMPORTANTE
+import toast from "react-hot-toast"; 
 
 export default function PaymentPage() {
   const { state } = useLocation();
@@ -25,7 +25,7 @@ export default function PaymentPage() {
     [amount]
   );
 
-  // --- Estados ---
+  //Estados 
   const [cardNumber, setCardNumber] = useState("");
   const [cardType, setCardType] = useState(null);
   const [isValid, setIsValid] = useState(null);
@@ -65,7 +65,7 @@ export default function PaymentPage() {
     /^[0-9]{3}$/.test(cvc) &&
     name.trim().length > 2;
 
-  // ✅ ACÁ VA EL TOAST
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!valid || loading) return;
@@ -101,7 +101,7 @@ export default function PaymentPage() {
       "https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg",
   };
 
-  // --- UI ---
+
   return (
     <section className="bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-5xl">
@@ -115,7 +115,7 @@ export default function PaymentPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* --- Resumen del pago --- */}
+          {}
           <div className="relative rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6 sm:p-8 overflow-hidden">
             <h2 className="text-2xl font-bold mb-6">Resumen del pago</h2>
 
@@ -139,7 +139,7 @@ export default function PaymentPage() {
               <p className="text-xl font-extrabold">{formattedAmount}</p>
             </div>
 
-            {/* --- Franja verde inferior --- */}
+      
             <div className="absolute left-0 bottom-0 w-full text-white overflow-hidden">
               <div className="relative flex flex-col items-center justify-center text-center h-24 
                     bg-gradient-to-r from-primary to-emerald-600 
@@ -154,12 +154,12 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {/* --- Formulario de tarjeta --- */}
+          
           <div className="rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6 sm:p-8">
             <h2 className="text-2xl font-bold mb-6">Formulario de tarjeta</h2>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
-              {/* Número de tarjeta */}
+            
               <div className="relative">
                 <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
                   Número de tarjeta
@@ -183,7 +183,7 @@ export default function PaymentPage() {
                 )}
               </div>
 
-              {/* Expiración y CVC */}
+       
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">

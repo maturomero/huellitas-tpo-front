@@ -6,20 +6,19 @@ import { Toaster, toast } from "react-hot-toast";
 import { Provider } from 'react-redux'
 import { store } from './redux/store'
 
-// 🔧 Parche global: evita toasts superpuestos
+
 (() => {
   const wrap = (name) => {
     const original = toast[name];
     toast[name] = (...args) => {
-      // cierra cualquier toast visible antes de abrir uno nuevo
+      
       toast.dismiss();
       return original(...args);
     };
   };
-  // métodos más usados
+
   ["success", "error", "loading", "custom"].forEach(wrap);
 
-  // caso especial: promise
   const originalPromise = toast.promise;
   toast.promise = (promise, msgs, opts) => {
     toast.dismiss();

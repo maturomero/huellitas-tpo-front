@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { backend } from "../api/backend";
 import AnimalChipsSelector from "../components/AnimalChipsSelector";
+import { useSelector, useDispatch } from 'react-redux'
+import { createProduct, updateProduct, deleteProduct, uploadProductImages } from "../redux/productsSlice";
+import productsSlice from "../redux/productsSlice";
 import toast from "react-hot-toast"; // ✅ agregado
 
 const ENDPOINTS = {
@@ -13,7 +16,11 @@ const ENDPOINTS = {
 };
 
 const NewProductPage = () => {
+  const { animals: animalsData, categories: categoriesData } = useSelector((state) => state.attributes)
+  const { currentProduct } = useSelector((state) => state.products)
+
   const { productId: productUrlParamId } = useParams();
+  const dispatch = useDispatch()
   const navigate = useNavigate();
 
   const isEditing = productUrlParamId?.length > 0;
@@ -42,13 +49,9 @@ const NewProductPage = () => {
     let ignore = false;
     (async () => {
       try {
-        const [aRes, cRes] = await Promise.all([
-          backend.get(ENDPOINTS.animals),
-          backend.get(ENDPOINTS.categories),
-        ]);
         if (ignore) return;
-        setAnimals((aRes.data || []).map((x) => ({ id: x.id, name: x.name })));
-        setCategories((cRes.data || []).map((x) => ({ id: x.id, name: x.description })));
+        setAnimals((animalsData || []).map((x) => ({ id: x.id, name: x.name })));
+        setCategories((categoriesData || []).map((x) => ({ id: x.id, name: x.description })));
       } catch {
         if (!ignore) setError("No se pudieron cargar animales/categorías.");
       }
@@ -56,7 +59,15 @@ const NewProductPage = () => {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [animalsData, categoriesData]);
+
+  useEffect(() => {
+    setName(currentProduct?.name ?? "");
+    setPrice(String(currentProduct?.price ?? ""));
+    setStock(String(currentProduct?.stock ?? ""));
+    setCategoryId(currentProduct?.category?.id ?? "");
+    setAnimalIds(Array.isArray(currentProduct?.animal) ? currentProduct.animal.map((a) => a.id) : []);
+  }, [currentProduct])
 
   useEffect(() => {
     if (action === "editar") {
@@ -89,12 +100,7 @@ const NewProductPage = () => {
     setError("");
     try {
       setLoading(true);
-      const { data: p } = await backend.get(ENDPOINTS.byId(productId));
-      setName(p?.name ?? "");
-      setPrice(String(p?.price ?? ""));
-      setStock(String(p?.stock ?? ""));
-      setCategoryId(p?.category?.id ?? "");
-      setAnimalIds(Array.isArray(p?.animal) ? p.animal.map((a) => a.id) : []);
+      dispatch(productsSlice.actions.getProductById({ id: productId, raw: true }))
     } catch {
       setError("No se pudo cargar el producto.");
     } finally {
@@ -123,17 +129,11 @@ const NewProductPage = () => {
           categoryId: Number(categoryId),
           animalId: animalIds.map(Number),
         };
-        const { data: created } = await backend.post(ENDPOINTS.products, payload);
+        const { data: created } = await dispatch(createProduct(payload));
         const newId = Number(created?.id ?? created?.productId);
         if (!Number.isFinite(newId)) throw new Error("ID de producto inválido al crear.");
 
-        for (const file of files) {
-          const fd = new FormData();
-          fd.append("file", file);
-          await backend.post(ENDPOINTS.uploadImage(newId), fd, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-        }
+        dispatch(uploadProductImages({ id: idNum, files }))
 
         toast.success("Producto creado con éxito"); 
         navigate("/productos");
@@ -143,23 +143,20 @@ const NewProductPage = () => {
       if (isEdit) {
         const idNum = Number(productId);
         if (!Number.isFinite(idNum)) throw new Error("ID inválido.");
-        await backend.patch(ENDPOINTS.byId(idNum), {
-          name: name.trim(),
-          price: Number(price),
-          stock: Number(stock),
-          status: true,
-          categoryId: Number(categoryId),
-          animalId: animalIds.map(Number),
-        });
+        dispatch(updateProduct({
+          id: idNum,
+          changes: {
+            name: name.trim(),
+            price: Number(price),
+            stock: Number(stock),
+            status: true,
+            categoryId: Number(categoryId),
+            animalId: animalIds.map(Number),
+          }
+        }));
 
         if (files.length) {
-          for (const file of files) {
-            const fd = new FormData();
-            fd.append("file", file);
-            await backend.post(ENDPOINTS.uploadImage(idNum), fd, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
-          }
+          dispatch(uploadProductImages({ id: idNum, files }))
         }
 
         toast.success("Producto actualizado con éxito"); 
@@ -170,7 +167,7 @@ const NewProductPage = () => {
       if (isDelete) {
         const idNum = Number(productId);
         if (!Number.isFinite(idNum)) throw new Error("ID inválido.");
-        await backend.delete(ENDPOINTS.byId(idNum));
+        await dispatch(deleteProduct(idNum));
         toast.success("Producto eliminado con éxito 🗑️"); 
         navigate("/productos");
         return;

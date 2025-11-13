@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { backend } from '../api/backend'
 
-// 🔹 mismo mapeo que usabas en el hook para no romper la UI
+//  mismo mapeo que usabas en el hook para no romper la UI
 const mapProduct = (p) => ({
   id: p.id,
   name: p.name,
@@ -20,9 +20,10 @@ const mapProduct = (p) => ({
 const URL = '/products'
 
 // =============== Thunks (igual de simples que el ejemplo) ===============
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
+export const fetchProducts = createAsyncThunk('products/fetchProducts', async ({ isAdmin }) => {
   // versión básica (como el hook para usuarios NO admin)
-  const { data } = await backend.get(`${URL}?sinStock=0`)
+  
+  const { data } = await backend.get(`${URL}?sinStock=${isAdmin ? 1 : 0}`)
   return data.map(mapProduct)
 })
 
@@ -64,10 +65,18 @@ const productsSlice = createSlice({
   name: 'products',
   initialState: {
     items: [],
+    currentProduct: {},
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    getProductById: (state, action) => {
+      console.log(action, state.items)
+      state.currentProduct = action.payload.raw
+        ? state.items.find(item => item.id == action.payload.id).raw
+        : state.items.find(item => item.id == action.payload.id)
+    }
+  },
   extraReducers: (builder) => {
     builder
       // fetch
@@ -108,4 +117,4 @@ const productsSlice = createSlice({
   },
 })
 
-export default productsSlice.reducer
+export default productsSlice
