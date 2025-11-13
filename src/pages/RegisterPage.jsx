@@ -1,10 +1,13 @@
-
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
+import toast from "react-hot-toast";
+
+import { useSelector, useDispatch } from 'react-redux'
+import { register } from "../redux/authSlice";
 
 export const RegisterPage = () => {
-  const { register, status } = useAuthContext();
+  const { status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -12,6 +15,7 @@ export const RegisterPage = () => {
   const [repeat, setRepeat] = useState("");
 
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (status === "authenticated") return <Navigate to="/" />;
 
@@ -20,33 +24,42 @@ export const RegisterPage = () => {
     fullName.length > 0 &&
     email.length > 0 &&
     password.length > 0 &&
-    repeat.length > 0
+    repeat.length > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-
+    // ⚠️ Validaciones mínimas con notificación
     if (!canSubmit) {
-      if (!passwordsMatch) setError("Las contraseñas no coinciden.");
-      else setError("Completá todos los campos.");
+      const msg = !passwordsMatch
+        ? "Completá todos los campos."
+        : "Las contraseñas no coinciden.";
+      setError(msg);
       return;
     }
 
     try {
-      await register({ fullName, email, password });
+      setSubmitting(true);
+      await dispatch(register({ fullName, email, password }));
+      toast.success("Cuenta creada con éxito");
+      // Redirección la maneja <Navigate /> cuando status cambia a 'authenticated'
     } catch (err) {
-      // tengo duda del espacio
-      const backendMessage = err.response?.data?.message || "";
+      // Mensaje que viene del backend (tu AuthContext hace throw)
+      const backendMessage = err?.response?.data?.message || "";
 
-      if (backendMessage.toLowerCase().includes("email")) {
+      // Detectar “cuenta ya existe” (ajustá los includes si tu backend usa otro texto)
+      const isEmailIssue = /email|existe|existente|registrad/i.test(backendMessage);
 
-        setError(backendMessage);
-      } else {
-        setError("No se pudo crear la cuenta. Revisá los datos.");
-      }
+      const msg = isEmailIssue
+        ? (backendMessage || "Ese email ya está registrado.")
+        : (backendMessage || "Ese email ya está registrado.");
 
+      setError(msg);
+      toast.error(msg);
       console.error("Error en registro:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -58,10 +71,8 @@ export const RegisterPage = () => {
       <div className="flex flex-col gap-6 justify-center items-center w-full">
         <h2 className="font-bold text-3xl">Crear cuenta</h2>
 
-        {/* Error global */}
         {error && <p className="text-sm text-red-600 -mt-2">{error}</p>}
 
-        {/* Nombre */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Nombre Completo</label>
           <input
@@ -73,14 +84,14 @@ export const RegisterPage = () => {
           />
         </div>
 
-        {/* Email */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Email</label>
           <input
-            className={`text-sm border ${error.toLowerCase().includes("email")
+            className={`text-sm border ${
+              error.toLowerCase().includes("email")
                 ? "border-red-500"
                 : "border-gray-300"
-              } px-4 py-3 rounded w-full focus:outline-2 focus:outline-[#1cc44c]`}
+            } px-4 py-3 rounded w-full focus:outline-2 focus:outline-[#1cc44c]`}
             type="email"
             placeholder="Ingresa tu email"
             value={email}
@@ -91,7 +102,6 @@ export const RegisterPage = () => {
           )}
         </div>
 
-        {/* Contraseña */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Contraseña</label>
           <input
@@ -103,12 +113,12 @@ export const RegisterPage = () => {
           />
         </div>
 
-        {/* Repetir contraseña */}
         <div className="flex flex-col gap-1 w-full">
           <label className="text-sm">Repetir contraseña</label>
           <input
-            className={`text-sm border ${repeat && password !== repeat ? "border-red-500" : "border-gray-300"
-              } px-4 py-3 rounded w-full focus:outline-2 focus:outline-[#1cc44c]`}
+            className={`text-sm border ${
+              repeat && password !== repeat ? "border-red-500" : "border-gray-300"
+            } px-4 py-3 rounded w-full focus:outline-2 focus:outline-[#1cc44c]`}
             type="password"
             placeholder="Ingresa tu contraseña"
             value={repeat}
@@ -123,9 +133,10 @@ export const RegisterPage = () => {
 
         <button
           type="submit"
-          className="bg-[#1cc44c] w-full py-2 rounded font-medium text-sm cursor-pointer hover:opacity-95 transition-opacity"
+          disabled={submitting}
+          className="bg-[#1cc44c] w-full py-2 rounded font-medium text-sm cursor-pointer hover:opacity-95 transition-opacity disabled:opacity-60"
         >
-          Crear cuenta
+          {submitting ? "Creando..." : "Crear cuenta"}
         </button>
 
         <Link to="/login" className="text-gray-500 text-xs underline">
@@ -135,8 +146,4 @@ export const RegisterPage = () => {
     </form>
   );
 };
-
-// <esto que onda>
-
-
 

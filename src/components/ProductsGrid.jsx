@@ -8,9 +8,7 @@ export const ProductsGrid = ({products, children}) => {
         Nuestros Productos
       </h2>
 
-
       {children}
-
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4 lg:px-8">
         {products.length > 0 ? (

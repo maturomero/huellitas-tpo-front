@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import useProducts from "../hooks/useProducts";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../redux/productsSlice";
 import ProductCard from "../components/ProductCard";
+import NewProductButton from "../components/NewProductButton";
+
+function capitalizar(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 export const ProductsPage = () => {
-  const { products, getProducts } = useProducts();
+  const products = useSelector((state) => state.products.items);
+  const loading = useSelector((state) => state.products.loading);
 
   // Filtros
   const [q, setQ] = useState("");
@@ -12,13 +20,8 @@ export const ProductsPage = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  useEffect(() => {
-    getProducts(); // trae todo del back
-  }, []);
-
-  // ====== Helpers para leer datos con distintos formatos ======
   const getAnimalNames = (p) => {
-    // p.animals: [{name:'Perro'}] o ['Perro'] | p.animal: {name:'Perro'} o 'Perro'
+
     const list = [];
     if (Array.isArray(p?.animals)) {
       for (const a of p.animals) {
@@ -45,7 +48,6 @@ export const ProductsPage = () => {
     return isNaN(n) ? null : n;
   };
 
-  // ====== Opciones dinámicas para los selects ======
   const animalOptions = useMemo(() => {
     const set = new Set();
     products.forEach((p) => getAnimalNames(p).forEach((n) => n && set.add(n)));
@@ -61,28 +63,28 @@ export const ProductsPage = () => {
     return Array.from(set).sort();
   }, [products]);
 
-  // ====== Filtrado ======
   const filtered = useMemo(() => {
     const qNorm = q.trim().toLowerCase();
 
     return products.filter((p) => {
-      // nombre
+  
       const name = (p?.name || "").toLowerCase();
       if (qNorm && !name.includes(qNorm)) return false;
 
-      // animal
+      
       if (animal) {
         const names = getAnimalNames(p).map((s) => s.toLowerCase());
+        console.log(names,animal.toLowerCase())
         if (!names.includes(animal.toLowerCase())) return false;
       }
 
-      // categoría
+      
       if (category) {
         const c = getCategoryName(p);
         if (!c || c.toLowerCase() !== category.toLowerCase()) return false;
       }
 
-      // rango de precio
+     
       const price = getPriceNumber(p);
       if (price != null) {
         if (minPrice !== "" && price < Number(minPrice)) return false;
@@ -104,12 +106,11 @@ export const ProductsPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* ====== SIDEBAR ====== */}
+        
         <aside className="md:col-span-3">
           <div className="sticky top-4">
             <h2 className="text-xl font-bold mb-4">Filtrar</h2>
 
-            {/* Buscar */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
                 Buscar productos
@@ -123,41 +124,38 @@ export const ProductsPage = () => {
               />
             </div>
 
-            {/* Categoría */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Categoría</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 bg-white"
+                className="w-full border rounded-md px-3 py-2 bg-white cursor-pointer"
               >
                 <option value="">Todas</option>
                 {categoryOptions.map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {capitalizar(c)}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Animal */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Animal</label>
               <select
                 value={animal}
                 onChange={(e) => setAnimal(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 bg-white"
+                className="w-full border rounded-md px-3 py-2 bg-white cursor-pointer"
               >
                 <option value="">Todos</option>
                 {animalOptions.map((a) => (
                   <option key={a} value={a}>
-                    {a}
+                    {capitalizar(a)}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Rango de precio */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
                 Precio (mín–máx)
@@ -182,17 +180,15 @@ export const ProductsPage = () => {
               </div>
             </div>
 
-            {/* Limpiar */}
             <button
               onClick={clearFilters}
-              className="w-full border rounded-md px-3 py-2 font-medium hover:bg-gray-50"
+              className="w-full border rounded-md px-3 py-2 font-medium hover:bg-gray-50 cursor-pointer"
             >
               Limpiar filtros
             </button>
           </div>
         </aside>
 
-        {/* ====== LISTA ====== */}
         <section className="md:col-span-9">
           <div className="flex items-baseline justify-between mb-4">
             <h1 className="text-2xl font-bold">Productos</h1>
@@ -201,7 +197,9 @@ export const ProductsPage = () => {
             </span>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <p className="text-gray-600">Cargando productos…</p>
+            ) : filtered.length === 0 ? (
             <p className="text-gray-600">
               No se encontraron productos con esos filtros.
             </p>
@@ -214,6 +212,7 @@ export const ProductsPage = () => {
           )}
         </section>
       </div>
+      <NewProductButton topClass="top-[90%]" />
     </div>
   );
 };

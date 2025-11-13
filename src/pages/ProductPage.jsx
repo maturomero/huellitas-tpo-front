@@ -1,14 +1,17 @@
 // src/pages/ProductPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { backend } from "../api/backend";
-import logo from "../assets/images/LOGO.jpg"; // fallback local
+import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
+import { useSelector, useDispatch } from "react-redux"
+import productsSlice from "../redux/productsSlice";
+
+import logo from "../assets/images/LOGO.jpg"; 
 
 const FALLBACK = logo;
 
-// ---------- MISMA LÓGICA QUE EN ProductsPage ----------
 const getAnimalData = (p) => {
-  // puede venir como array o como objeto simple
+
   if (Array.isArray(p?.animals) && p.animals.length > 0) {
     const first = p.animals[0];
     if (typeof first === "string") return { name: first };
@@ -20,18 +23,20 @@ const getAnimalData = (p) => {
   }
   return null;
 };
-// ------------------------------------------------------
 
 export const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+
+  const { user } = useSelector((state) => state.auth)
+  const { currentProduct, items } = useSelector((state) => state.products)
+  const dispatch = useDispatch()
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [error, setError] = useState("");
 
-  // ====== Precios ======
   const priceNum = useMemo(() => Number(product?.price), [product]);
   const transferNum = useMemo(
     () => Number(product?.priceWithTransferDiscount ?? product?.price_with_transfer_discount),
@@ -45,39 +50,36 @@ export const ProductPage = () => {
 
   const priceText = !Number.isNaN(priceNum) ? `$${priceNum.toFixed(2)}` : product?.price || "";
 
-  // ====== Stock label ======
   const stockLabel = useMemo(() => {
     if (product?.stock == null) return "—";
     if (Number(product.stock) <= 0) return "Sin stock";
     return Number(product.stock) > 10 ? "Alto" : "Bajo";
   }, [product]);
 
-  // ====== Data fetch ======
   useEffect(() => {
     let ignore = false;
     const ctrl = new AbortController();
+
+    if (!items.length) return
+
+    dispatch(productsSlice.actions.getProductById({ id: productId, raw: true }))    
 
     async function load() {
       try {
         setLoading(true);
         setError("");
 
-        // 1) Producto
-        const { data } = await backend.get(`/products/${productId}`, {
-          signal: ctrl.signal,
-        });
         if (ignore) return;
 
-        if (!data || Number(data.stock) === 0) {
+        if (!currentProduct || Number(currentProduct.stock) === 0) {
           setProduct(null);
           setImageUrl(null);
           setError("Este producto no se encuentra disponible.");
           return;
         }
 
-        setProduct(data);
+        setProduct(currentProduct);
 
-        // 2) Imagen
         const idsResp = await backend.get(`/products/images/${productId}`, {
           signal: ctrl.signal,
         });
@@ -115,9 +117,8 @@ export const ProductPage = () => {
       ignore = true;
       ctrl.abort();
     };
-  }, [productId]);
+  }, [productId, currentProduct, items]);
 
-  // ====== Estados UI ======
   if (loading) return <div className="max-w-6xl mx-auto p-6">Cargando…</div>;
 
   if (error) {
@@ -148,14 +149,13 @@ export const ProductPage = () => {
     );
   }
 
-  // obtenemos el animal con la misma lógica que categoría
   const animalData = getAnimalData(product);
 
-  // ====== UI ======
   return (
     <div className="max-w-7xl mx-auto p-10">
+      <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
       <div className="grid grid-cols-1 md:grid-cols-13 gap-8">
-        {/* LEFT: imagen + pagos */}
+        
         <div className="md:col-span-7">
           <div className="w-full overflow-hidden rounded-xl bg-white border border-gray-200">
             <img
@@ -168,7 +168,6 @@ export const ProductPage = () => {
             />
           </div>
 
-          {/* Medios de pago */}
           <div className="mt-6 flex flex-col">
             <p className="text-sm text-gray-600 mb-3">Medios de pago aceptados</p>
             <img
@@ -181,7 +180,6 @@ export const ProductPage = () => {
           </div>
         </div>
 
-        {/* RIGHT: info ampliada */}
         <div className="md:col-span-6 flex flex-col gap-5">
           <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
             {product.name}
@@ -196,14 +194,13 @@ export const ProductPage = () => {
                 ${transferNum.toFixed(2)}
               </span>
               <span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
-                Transfer
+                Abonando con transferencia
               </span>
             </div>
           ) : (
             <p className="text-3xl font-extrabold text-emerald-600">{priceText}</p>
           )}
 
-          {/* Categoría y Animal */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
             <div>
               <p className="text-gray-500 text-sm">Categoría</p>
@@ -233,8 +230,6 @@ export const ProductPage = () => {
           </div>
 
 
-
-          {/* Stock */}
           <div className="mt-2">
             <p className="text-gray-500 text-sm">Disponibilidad</p>
             {stockLabel === "Sin stock" ? (
@@ -252,24 +247,33 @@ export const ProductPage = () => {
             )}
           </div>
 
-          {/* Acciones */}
-          <div className="mt-2 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => console.log("ADD_TO_CART:", product)}
-              className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-              disabled={stockLabel === "Sin stock"}
-            >
-              Agregar al carrito
-            </button>
+          <div className="mt-2 flex gap-3">
+            {user?.profile?.role === "USER" 
+              ? <ConfirmBuyComponent product={product} /> 
+              : ""
+              }
+            
+            {user?.profile?.role === 'ADMIN'
+              ? (
+                <Link 
+                  to={`/productos/${product.id}/editar`}
+                  className="flex-1 text-center w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                >
+                  Editar
+                </Link>
+              )
+              : user?.profile ? (
+                <button
+                  type="button"
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-bold text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  disabled={stockLabel === "Sin stock"}
+                >
+                  Finalizar compra
+                </button>
+              ) : null
+            }
 
-            <button
-              type="button"
-              className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-bold text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              disabled={stockLabel === "Sin stock"}
-            >
-              Finalizar compra
-            </button>
+            
           </div>
 
           {product?.description && (

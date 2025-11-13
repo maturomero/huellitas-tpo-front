@@ -5,17 +5,26 @@ import { ProductsPage } from "../pages/ProductsPage";
 import { ProductPage } from "../pages/ProductPage";
 import { OrderPage } from "../pages/OrderPage";
 import { RegisterPage } from "../pages/RegisterPage";
-import { NewProductPage } from "../pages/NewProductPage";
+import NewProductPage from "../pages/NewProductPage";
 import { EditProductPage } from "../pages/EditProductPage";
 import { Layout } from "../components/Layout";
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
 import AdminRoutes from './AdminRoutes'
-import { useAuthContext } from "../contexts/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
+import { validateSession } from '../redux/authSlice'
 import LoadingPage from "../pages/LoadingPage";
+import OrderDetailPage from "../pages/OrderDetailPage";
+import PaymentPage from "../pages/PaymentPage";
+import { useEffect } from 'react'
 
 export default function AppRouter() {
-  const { status } = useAuthContext()
+  const { status } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(validateSession())
+  }, [])
 
   if (status === 'checking') {
     return <LoadingPage />
@@ -34,9 +43,11 @@ export default function AppRouter() {
 
         <Route element={<PrivateRoutes />}>
           <Route path="/orden" element={<OrderPage />} />
+          <Route path="/orden/:id" element={<OrderDetailPage />} />
+          <Route path="/pago" element={<PaymentPage />} />
 
           <Route element={<AdminRoutes />}>
-            <Route path="/productos/editar/:productId" element={<EditProductPage />} />
+            <Route path="/productos/:productId/editar" element={<NewProductPage />} />
             <Route path="/productos/nuevo" element={<NewProductPage />} />
           </Route>
         </Route>

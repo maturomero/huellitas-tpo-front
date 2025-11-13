@@ -1,25 +1,19 @@
-import React, { useEffect } from "react";
-import useProducts from "../hooks/useProducts";
-import { ProductCard } from "../components/ProductCard";
+import React, { useEffect, useCallback } from "react";
 import { HeroSection } from "../components/home/HeroSection";
 import { ProductsGrid } from "../components/ProductsGrid";
+import { fetchProducts } from "../redux/productsSlice";
+import NewProductButton from "../components/NewProductButton";
+import { useSelector, useDispatch } from 'react-redux'
 
 export const HomePage = () => {
-  const { products, getProducts } = useProducts();
-
-  // Traigo productos al montar
-  useEffect(() => {
-    getProducts();
-  }, []);
-
-  // Muestro los primeros 4 en la home
-  const featured = products.slice(0, 4);
+  const products = useSelector((state) => state.products.items)
+  const featured = (products ?? []).slice(0, 4);
 
   return (
     <>
-      <HeroSection/>
-
-      <ProductsGrid products={featured}/> 
+      <HeroSection />
+      <NewProductButton topClass="top-[90%]" />
+      <ProductsGrid products={featured} />
     </>
   );
 };
