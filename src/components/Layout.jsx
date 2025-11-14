@@ -1,37 +1,43 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux'
-import { authSlice } from '../redux/authSlice'
+import { NavLink, Link, Outlet } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { ShoppingCart } from 'lucide-react'
+
+import { authSlice } from "../redux/authSlice";
 import { fetchProducts } from "../redux/productsSlice";
-import { fetchAnimals, fetchCategories } from "../redux/attributesSlice"
+import { fetchAnimals, fetchCategories } from "../redux/attributesSlice";
 
 import logo from "../assets/images/LOGO.jpg";
 
 export const Layout = () => {
-  const { user, status } = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
+  const { user, status } = useSelector((state) => state.auth);
+  const { items } = useSelector((state) => state.cart)
+  const dispatch = useDispatch();
 
   const EMAIL = "petshophuellitas04@gmail.com";
   const subject = encodeURIComponent("Consulta desde la web");
   const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
 
+  // cargar animales y categorías
   useEffect(() => {
-    dispatch(fetchAnimals())
-    dispatch(fetchCategories())
-  }, [])
+    dispatch(fetchAnimals());
+    dispatch(fetchCategories());
+  }, []);
 
+  // cargar productos según rol
   useEffect(() => {
-    dispatch(fetchProducts({ isAdmin: user?.profile?.role === 'ADMIN' }))
-  }, [user])
+    dispatch(fetchProducts({ isAdmin: user?.profile?.role === "ADMIN" }));
+  }, [user]);
 
   const handleLogout = () => {
-    dispatch(authSlice.actions.logout())
-  }
+    dispatch(authSlice.actions.logout());
+  };
 
   return (
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
         <header className="py-6 flex justify-between items-center">
+          {/* Logo + nombre */}
           <div className="flex items-center space-x-3">
             <Link to="/">
               <img
@@ -41,41 +47,100 @@ export const Layout = () => {
               />
             </Link>
             <Link to="/">
-              <span className="text-2xl font-bold text-primary">Huellitas PetShop</span>
+              <span className="text-2xl font-bold text-primary">
+                Huellitas PetShop
+              </span>
             </Link>
           </div>
 
           <div className="flex items-center space-x-8">
+            {/* Menu navegación */}
             <nav className="hidden md:flex space-x-8">
-              <NavLink to="/" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `hover:text-primary transition-colors ${
+                    isActive ? "text-primary font-semibold" : "text-text-light"
+                  }`
+                }
+              >
                 Inicio
               </NavLink>
-              <NavLink end to="/productos" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
+
+              <NavLink
+                end
+                to="/productos"
+                className={({ isActive }) =>
+                  `hover:text-primary transition-colors ${
+                    isActive ? "text-primary font-semibold" : "text-text-light"
+                  }`
+                }
+              >
                 Productos
               </NavLink>
 
-              {status === 'not-authenticated' && (
-                <NavLink to="/login" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
+              {/* Si NO está autenticado */}
+              {status === "not-authenticated" && (
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    `hover:text-primary transition-colors ${
+                      isActive ? "text-primary font-semibold" : "text-text-light"
+                    }`
+                  }
+                >
                   Iniciar sesión
                 </NavLink>
               )}
 
-              {user?.profile?.role === 'USER' && (
-                <NavLink end to="/orden" className={({ isActive }) => `hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-text-light'}`}>
-                  Ordenes
-                </NavLink>
+              {/* Si es usuario normal */}
+              {user?.profile?.role === "USER" && (
+                <>
+                  <NavLink
+                    end
+                    to="/orden"
+                    className={({ isActive }) =>
+                      `hover:text-primary transition-colors ${
+                        isActive
+                          ? "text-primary font-semibold"
+                          : "text-text-light"
+                      }`
+                    }
+                  >
+                    Ordenes
+                  </NavLink>
+
+                  {/* 👇 AGREGADO: Link al carrito (no afecta nada si no querés utilizarlo) */}
+                  <NavLink
+                    end
+                    to="/carrito"
+                    className={({ isActive }) =>
+                      `hover:text-primary transition-colors flex items-center gap-3 ${
+                        isActive
+                          ? "text-primary font-semibold"
+                          : "text-text-light"
+                      }`
+                    }
+                  >
+                    <ShoppingCart className="stroke-primary size-6" />
+                    {items.length > 0 && <div className="bg-primary rounded-full p-1 size-5 flex items-center justify-center"><span className="text-[11px] text-white">{items.length}</span></div>}
+                    Carrito
+                  </NavLink>
+                </>
               )}
             </nav>
 
-            {status === 'authenticated' && (
+            {/* Si está autenticado */}
+            {status === "authenticated" && (
               <>
-                <p className="text-sm text-gray-600">Hola {user.profile.fullname}!</p>
+                <p className="text-sm text-gray-600">
+                  Hola {user.profile.fullname}!
+                </p>
                 <button className="cursor-pointer" onClick={handleLogout}>
                   Salir
                 </button>
               </>
             )}
-
           </div>
 
           <button className="md:hidden text-text-light">
@@ -83,26 +148,32 @@ export const Layout = () => {
           </button>
         </header>
 
+        {/* Vista de cada página */}
         <main className="flex-1">
           <Outlet />
         </main>
 
+        {/* Footer */}
         <footer className="text-center py-8 border-t border-gray-200">
           <p className="text-subtext-light">
             © 2025 Huellitas PetShop. Todos los derechos reservados.
           </p>
 
           <div className="flex justify-center space-x-4 mt-4">
-
+            {/* Facebook */}
             <a
               href="https://www.facebook.com/profile.php?id=61581743836499"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
               className="text-subtext-light hover:text-primary transition-colors"
-              title="Facebook"
             >
-              <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="w-6 h-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   clipRule="evenodd"
                   fillRule="evenodd"
@@ -111,28 +182,37 @@ export const Layout = () => {
               </svg>
             </a>
 
+            {/* Email */}
             <a
               href={`mailto:${EMAIL}?subject=${subject}&body=${body}`}
               aria-label="Enviar correo"
               className="text-subtext-light hover:text-primary transition-colors"
-              title={`Escribir a ${EMAIL}`}
             >
-
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <svg
+                className="w-6 h-6"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M1.5 8.67V18A2.25 2.25 0 003.75 20.25h16.5A2.25 2.25 0 0022.5 18V8.67l-9.33 5.6a2.25 2.25 0 01-2.34 0L1.5 8.67z" />
                 <path d="M22.5 6.75v-.008A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.742v.008l9.33 5.6a2.25 2.25 0 002.34 0l9.33-5.6z" />
               </svg>
             </a>
 
+            {/* Instagram */}
             <a
               href="https://www.instagram.com/petshophuellitas04/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
               className="text-subtext-light hover:text-primary transition-colors"
-              title="Instagram"
             >
-              <svg aria-hidden="true" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="w-6 h-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   clipRule="evenodd"
                   fillRule="evenodd"
@@ -148,5 +228,6 @@ export const Layout = () => {
 };
 
 export default Layout;
+
 
 

@@ -2,16 +2,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { backend } from "../api/backend";
-import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 import productsSlice from "../redux/productsSlice";
+import cartSlice from "../redux/cartSlice";
 
-import logo from "../assets/images/LOGO.jpg"; 
+const { handleAddProduct } = cartSlice.actions
+
+import logo from "../assets/images/LOGO.jpg";
 
 const FALLBACK = logo;
 
 const getAnimalData = (p) => {
-
   if (Array.isArray(p?.animals) && p.animals.length > 0) {
     const first = p.animals[0];
     if (typeof first === "string") return { name: first };
@@ -28,18 +30,24 @@ export const ProductPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
 
-  const { user } = useSelector((state) => state.auth)
-  const { currentProduct, items } = useSelector((state) => state.products)
-  const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth);
+  const { currentProduct, items } = useSelector((state) => state.products);
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [error, setError] = useState("");
 
+  const [units, setUnits] = useState(1); // cantidad seleccionada
+
   const priceNum = useMemo(() => Number(product?.price), [product]);
   const transferNum = useMemo(
-    () => Number(product?.priceWithTransferDiscount ?? product?.price_with_transfer_discount),
+    () =>
+      Number(
+        product?.priceWithTransferDiscount ??
+          product?.price_with_transfer_discount
+      ),
     [product]
   );
   const hasTransfer =
@@ -48,7 +56,9 @@ export const ProductPage = () => {
     !Number.isNaN(priceNum) &&
     transferNum !== priceNum;
 
-  const priceText = !Number.isNaN(priceNum) ? `$${priceNum.toFixed(2)}` : product?.price || "";
+  const priceText = !Number.isNaN(priceNum)
+    ? `$${priceNum.toFixed(2)}`
+    : product?.price || "";
 
   const stockLabel = useMemo(() => {
     if (product?.stock == null) return "—";
@@ -56,13 +66,23 @@ export const ProductPage = () => {
     return Number(product.stock) > 10 ? "Alto" : "Bajo";
   }, [product]);
 
+  // máximo permitido según stock
+  const maxUnits = useMemo(() => {
+    if (!product?.stock) return 1;
+    const n = Number(product.stock);
+    if (Number.isNaN(n) || n <= 0) return 1;
+    return n;
+  }, [product]);
+
   useEffect(() => {
     let ignore = false;
     const ctrl = new AbortController();
 
-    if (!items.length) return
+    if (!items.length) return;
 
-    dispatch(productsSlice.actions.getProductById({ id: productId, raw: true }))    
+    dispatch(
+      productsSlice.actions.getProductById({ id: productId, raw: true })
+    );
 
     async function load() {
       try {
@@ -94,7 +114,9 @@ export const ProductPage = () => {
           if (ignore) return;
           const base64 = imgResp.data?.file;
           if (base64) {
-            const mime = base64.startsWith("iVBORw0K") ? "image/png" : "image/jpeg";
+            const mime = base64.startsWith("iVBORw0K")
+              ? "image/png"
+              : "image/jpeg";
             setImageUrl(`data:${mime};base64,${base64}`);
           } else {
             setImageUrl(null);
@@ -117,7 +139,59 @@ export const ProductPage = () => {
       ignore = true;
       ctrl.abort();
     };
-  }, [productId, currentProduct, items]);
+  }, [productId, currentProduct, items, dispatch]);
+
+  const handleUnitsChange = (e) => {
+    const value = Number(e.target.value) || 1;
+    if (value < 1) {
+      setUnits(1);
+    } else if (value > maxUnits) {
+      setUnits(maxUnits);
+    } else {
+      setUnits(value);
+    }
+  };
+
+  const addToCartBase = () => {
+    if (!user?.profile || user.profile.role !== "USER") return;
+
+    // 👇 debug fuerte
+    console.log("handleAddProduct >>>", handleAddProduct);
+
+    if (typeof handleAddProduct !== "function") {
+      console.error("handleAddProduct NO es una función, algo está mal en los imports/exports");
+      return; // evitamos dispatch(undefined) y que rompa
+    }
+
+    const stock = Number(product.stock) || 0;
+    if (stock <= 0) return;
+
+    const safeUnits = Math.min(units, stock);
+
+    dispatch(
+      handleAddProduct({
+        product,
+        units: safeUnits,
+        imageUrl
+      })
+    );
+
+    if (safeUnits > 1) {
+      toast.success(`Se añadieron ${safeUnits} unidades de ${product.name} al carrito.`)
+    } else {
+      toast.success(`Se añadió ${safeUnits} unidad de ${product.name} al carrito.`)
+    }
+};
+
+
+  const handleAddToCart = () => {
+    addToCartBase();          // solo agrega al carrito
+  };
+
+  const handleAddToCartAndGo = () => {
+    addToCartBase();          // agrega al carrito
+    navigate("/carrito");     // y va al carrito
+  };
 
   if (loading) return <div className="max-w-6xl mx-auto p-6">Cargando…</div>;
 
@@ -149,13 +223,18 @@ export const ProductPage = () => {
     );
   }
 
-  const animalData = getAnimalData(product);
+  const animalData = getAnimalData(product); // por si después lo usás
 
   return (
     <div className="max-w-7xl mx-auto p-10">
-      <button onClick={() => navigate(-1)} className="text-sm text-[#64876e] mb-3 cursor-pointer">← Volver</button>
+      <button
+        onClick={() => navigate(-1)}
+        className="text-sm text-[#64876e] mb-3 cursor-pointer"
+      >
+        ← Volver
+      </button>
       <div className="grid grid-cols-1 md:grid-cols-13 gap-8">
-        
+        {/* Imagen + pagos */}
         <div className="md:col-span-7">
           <div className="w-full overflow-hidden rounded-xl bg-white border border-gray-200">
             <img
@@ -169,7 +248,9 @@ export const ProductPage = () => {
           </div>
 
           <div className="mt-6 flex flex-col">
-            <p className="text-sm text-gray-600 mb-3">Medios de pago aceptados</p>
+            <p className="text-sm text-gray-600 mb-3">
+              Medios de pago aceptados
+            </p>
             <img
               src="/payments/pagos.webp"
               alt="Medios de pago aceptados"
@@ -180,6 +261,7 @@ export const ProductPage = () => {
           </div>
         </div>
 
+        {/* Info derecha */}
         <div className="md:col-span-6 flex flex-col gap-5">
           <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
             {product.name}
@@ -198,16 +280,19 @@ export const ProductPage = () => {
               </span>
             </div>
           ) : (
-            <p className="text-3xl font-extrabold text-emerald-600">{priceText}</p>
+            <p className="text-3xl font-extrabold text-emerald-600">
+              {priceText}
+            </p>
           )}
 
+          {/* Categoría / Animal */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
             <div>
               <p className="text-gray-500 text-sm">Categoría</p>
               <p className="text-gray-900 text-base">
                 {product?.category?.description
                   ? product.category.description.charAt(0).toUpperCase() +
-                  product.category.description.slice(1).toLowerCase()
+                    product.category.description.slice(1).toLowerCase()
                   : "—"}
               </p>
             </div>
@@ -217,19 +302,42 @@ export const ProductPage = () => {
               <p className="text-gray-900 text-base">
                 {Array.isArray(product?.animal) && product.animal.length > 0
                   ? product.animal
-                    .map((a) =>
-                      a?.name
-                        ? a.name.charAt(0).toUpperCase() + a.name.slice(1).toLowerCase()
-                        : ""
-                    )
-                    .filter(Boolean)
-                    .join(", ")
+                      .map((a) =>
+                        a?.name
+                          ? a.name.charAt(0).toUpperCase() +
+                            a.name.slice(1).toLowerCase()
+                          : ""
+                      )
+                      .filter(Boolean)
+                      .join(", ")
                   : "—"}
               </p>
             </div>
           </div>
 
+          {/* Cantidad */}
+          <div className="mt-2">
+            <p className="text-gray-500 text-sm">
+              Cantidad:{" "}
+              <span className="font-semibold">
+                {units} {units === 1 ? "unidad" : "unidades"}
+              </span>
+            </p>
+            <select
+              className="mt-1 border border-gray-300 rounded-md px-2 py-1 text-sm"
+              value={units}
+              onChange={handleUnitsChange}
+              disabled={Number(product.stock) <= 0}
+            >
+              {Array.from({ length: maxUnits }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? "unidad" : "unidades"}
+                </option>
+              ))}
+            </select>
+          </div>
 
+          {/* Disponibilidad */}
           <div className="mt-2">
             <p className="text-gray-500 text-sm">Disponibilidad</p>
             {stockLabel === "Sin stock" ? (
@@ -247,39 +355,45 @@ export const ProductPage = () => {
             )}
           </div>
 
-          <div className="mt-2 flex gap-3">
-            {user?.profile?.role === "USER" 
-              ? <ConfirmBuyComponent product={product} /> 
-              : ""
-              }
-            
-            {user?.profile?.role === 'ADMIN'
-              ? (
-                <Link 
-                  to={`/productos/${product.id}/editar`}
-                  className="flex-1 text-center w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+          {/* Botones */}
+          <div className="mt-2 flex flex-wrap gap-3">
+            {user?.profile?.role === "ADMIN" ? (
+              <Link
+                to={`/productos/${product.id}/editar`}
+                className="flex-1 text-center w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              >
+                Editar
+              </Link>
+            ) : user?.profile?.role === "USER" ? (
+              <>
+                <button
+                  type="button"
+                  className="flex-1 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  disabled={stockLabel === "Sin stock"}
+                  onClick={handleAddToCart}
                 >
-                  Editar
-                </Link>
-              )
-              : user?.profile ? (
+                  Agregar al carrito
+                </button>
+
                 <button
                   type="button"
                   className="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-bold text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                   disabled={stockLabel === "Sin stock"}
+                  onClick={handleAddToCartAndGo}
                 >
                   Finalizar compra
                 </button>
-              ) : null
-            }
-
-            
+              </>
+            ) : null}
           </div>
 
+          {/* Descripción */}
           {product?.description && (
             <div className="mt-4">
               <h2 className="text-base font-semibold mb-2">Descripción</h2>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
             </div>
           )}
         </div>
@@ -289,3 +403,4 @@ export const ProductPage = () => {
 };
 
 export default ProductPage;
+

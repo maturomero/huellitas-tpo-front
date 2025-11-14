@@ -17,6 +17,7 @@ import LoadingPage from "../pages/LoadingPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import PaymentPage from "../pages/PaymentPage";
 import { useEffect } from 'react'
+import CartPage from "../pages/CartPage" 
 
 export default function AppRouter() {
   const { status } = useSelector((state) => state.auth)
@@ -42,9 +43,11 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoutes />}>
+          <Route path="/carrito" element={<CartPage />} />  
           <Route path="/orden" element={<OrderPage />} />
           <Route path="/orden/:id" element={<OrderDetailPage />} />
           <Route path="/pago" element={<PaymentPage />} />
+          
 
           <Route element={<AdminRoutes />}>
             <Route path="/productos/:productId/editar" element={<NewProductPage />} />

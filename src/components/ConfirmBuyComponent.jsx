@@ -21,15 +21,7 @@ export default function ConfirmBuyComponent({ product, label = "Comprar" }) {
     // 👉 Si es tarjeta, redirigimos a /pago con los datos necesarios
     if (paymentMethod === "card") {
       setIsModalConfirmationOpen(false);
-      navigate("/pago", {
-        state: {
-          product,           // llevamos el producto (id, name, price, etc.)
-          units: 1,
-          userId: user.userId,
-          from: "buy-now",
-        },
-        replace: false,
-      });
+      navigate("/pago");
       return;
     }
 

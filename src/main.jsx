@@ -30,7 +30,7 @@ createRoot(document.getElementById("root")).render(
   <Provider store={store} >
     <BrowserRouter>
       <Toaster
-        position="bottom-left"
+        position="top-center"
         reverseOrder={false}
         toastOptions={{
           duration: 4000,
