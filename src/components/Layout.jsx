@@ -123,7 +123,7 @@ export const Layout = () => {
                     }
                   >
                     <ShoppingCart className="stroke-primary size-6" />
-                    {items.length > 0 && <div className="bg-primary rounded-full p-1 size-5 flex items-center justify-center"><span className="text-[11px] text-white">{items.length}</span></div>}
+                    {items?.length > 0 && <div className="bg-primary rounded-full p-1 size-5 flex items-center justify-center"><span className="text-[11px] text-white">{items.length}</span></div>}
                     Carrito
                   </NavLink>
                 </>

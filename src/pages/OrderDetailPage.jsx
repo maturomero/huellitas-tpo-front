@@ -96,7 +96,7 @@ export default function OrderDetailPage() {
             const name = nameMap[pid] || `Producto #${pid}`;
             const img = imgMap[pid] || FALLBACK;
             const unit = Number(it.price ?? 0);
-            const qty = Number(it.units || 1);
+            const qty = Number(it.units || it.unit || 1);
             const subtotal = unit * qty;
 
             return (

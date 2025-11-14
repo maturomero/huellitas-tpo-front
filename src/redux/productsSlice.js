@@ -90,6 +90,7 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false
+        state.items = []
         state.error = action.error.message
       })
 

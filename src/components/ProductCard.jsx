@@ -6,6 +6,8 @@ import { deleteProduct } from "../redux/productsSlice";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
 import { detectMime } from "../helpers/detectMime";
 import toast from "react-hot-toast"; 
+import { ShoppingCart } from 'lucide-react'
+import cartSlice from "../redux/cartSlice";
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -22,9 +24,9 @@ const FALLBACK =
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export const ProductCard = ({ product }) => {
+export default function ProductCard({ product }) {
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   if (!product) return null;
 
@@ -116,99 +118,113 @@ export const ProductCard = ({ product }) => {
     };
   }, [product?.id, firstIdFromList]);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     if (deleting) return;
     try {
       setDeleting(true);
-      dispatch(deleteProduct(product.id))
-      toast.success("Producto eliminado correctamente"); 
+      dispatch(deleteProduct(product.id));
+      toast.success("Producto eliminado correctamente");
     } catch (e) {
-      const msg = e?.response?.data?.message || "No se pudo eliminar el producto.";
+      const msg = e?.response?.data?.message || "Error eliminando producto.";
       toast.error(msg);
     } finally {
       setDeleting(false);
     }
   };
 
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    dispatch(
+      cartSlice.actions.handleAddProduct({
+        product,
+        units: 1,
+        imageUrl: src,
+      })
+    );
+  };
+
   return (
     <li className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      {user?.profile?.role === "ADMIN" ? (
+      
+      {user?.profile?.role === "ADMIN" && (
         <div className="w-full flex justify-end">
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="bg-red-400 size-8 rounded-full flex items-center justify-center m-4 mb-2 cursor-pointer hover:opacity-90 disabled:opacity-60"
+            className="bg-red-400 size-8 rounded-full flex items-center justify-center m-4 mb-2 hover:opacity-90 disabled:opacity-60"
             title={deleting ? "Eliminando..." : "Eliminar"}
           >
-            <span className="text-white font-medium">{deleting ? "…" : "x"}</span>
+            <span className="text-white font-medium">
+              {deleting ? "…" : "x"}
+            </span>
           </button>
         </div>
-      ) : null}
+      )}
 
-      <div
-        onClick={goDetail}
-        className="relative w-full cursor-pointer overflow-hidden aspect-[4/3] bg-white"
-      >
-        <img
-          src={src}
-          alt={product.name || "Producto"}
-          className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
-          onError={() => setSrc(FALLBACK)}
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <div onClick={goDetail} className="cursor-pointer">
+
+        <div className="relative w-full overflow-hidden aspect-[4/3] bg-white">
+          <img
+            src={src}
+            alt={product.name || "Producto"}
+            className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
+            onError={() => setSrc(FALLBACK)}
+            loading="lazy"
+          />
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+        </div>
+
+        <div className="p-4 pb-0">
+          <h3
+            className="text-base font-medium leading-snug text-gray-900 line-clamp-2"
+            title={product.name}
+          >
+            {product.name}
+          </h3>
+        </div>
       </div>
 
-      <div className="flex flex-col items-center gap-2 p-4 text-center">
-        <h3
-          onClick={goDetail}
-          title={product.name}
-          className="cursor-pointer px-2 text-base font-semibold leading-snug text-gray-900 min-h-[2.75rem] line-clamp-2"
-          style={{
-            WebkitLineClamp: 2,
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            fontFamily:
-              "system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif",
-          }}
-        >
-          {product.name}
-        </h3>
-
+      <div className="p-4 pt-2 flex flex-col gap-2">
         {hasTransfer ? (
-          <div className="mt-1 flex items-center gap-2">
-            <span className="text-sm text-gray-500 line-through">
+          <div className="flex flex-col gap-1">
+            <span className="font-medium text-[22px]">
               ${priceNum.toFixed(2)}
             </span>
-            <span className="text-lg font-bold text-emerald-600">
-              ${transferNum.toFixed(2)}
-            </span>
-            <span className="ml-1 rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
-              Abonando con transferencia
+            <span className="font-bold text-sm text-emerald-600">
+              ${transferNum.toFixed(2)}{" "}
+              <span className="ml-1 rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
+                Abonando con transferencia
+              </span>
             </span>
           </div>
         ) : (
-          <p className="mt-1 text-lg font-bold text-emerald-600">{priceText}</p>
+          <p className="text-lg font-bold text-emerald-600">{priceText}</p>
         )}
 
         <div className="flex items-center gap-2 w-full mt-2">
-          {user?.profile?.role === "USER" ? (
-            <ConfirmBuyComponent product={product} />
-          ) : null}
-          {user?.profile?.role === "ADMIN" ? (
+          {user?.profile?.role === "USER" && (
+            <>
+              <button
+                onClick={handleAddToCart}
+                className="cursor-pointer flex-1 w-full text-white hover:bg-primary/90 font-bold rounded-lg text-sm px-4 py-2 bg-primary flex items-center gap-2 justify-center"
+              >
+                <ShoppingCart className="size-4 text-white stroke-2" /> Añadir
+              </button>
+            </>
+          )}
+
+          {user?.profile?.role === "ADMIN" && (
             <Link
               to={`/productos/${product.id}/editar`}
-              className="flex-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              className="flex-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-center text-white transition-colors hover:bg-emerald-600"
             >
               Editar
             </Link>
-          ) : null}
+          )}
         </div>
       </div>
     </li>
   );
 };
-
-export default ProductCard;

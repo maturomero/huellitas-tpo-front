@@ -175,12 +175,6 @@ export const ProductPage = () => {
         imageUrl
       })
     );
-
-    if (safeUnits > 1) {
-      toast.success(`Se añadieron ${safeUnits} unidades de ${product.name} al carrito.`)
-    } else {
-      toast.success(`Se añadió ${safeUnits} unidad de ${product.name} al carrito.`)
-    }
 };
 
 
@@ -381,7 +375,7 @@ export const ProductPage = () => {
                   disabled={stockLabel === "Sin stock"}
                   onClick={handleAddToCartAndGo}
                 >
-                  Finalizar compra
+                  Comprar ahora
                 </button>
               </>
             ) : null}

@@ -15,7 +15,7 @@ export const ProductsGrid = ({products, children}) => {
           products.map((p) => <ProductCard key={p.id} product={p} />)
         ) : (
           <li className="col-span-full text-center text-gray-500">
-            Cargando productos…
+            No se encontraron productos.
           </li>
         )}
       </ul>
