@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { backend } from "../api/backend";
 import AnimalChipsSelector from "../components/AnimalChipsSelector";
 import { useSelector, useDispatch } from 'react-redux'
 import { createProduct, updateProduct, deleteProduct, uploadProductImages } from "../redux/productsSlice";
