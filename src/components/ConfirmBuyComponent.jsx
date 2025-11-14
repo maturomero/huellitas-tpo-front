@@ -2,45 +2,68 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { backend } from "../api/backend";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProducts } from "../redux/productsSlice";
+import cartSlice from "../redux/cartSlice";
+import toast from "react-hot-toast";
 
-export default function ConfirmBuyComponent({ product, label = "Comprar" }) {
+export default function ConfirmBuyComponent({
+  onClick = () => {},
+  label = "Comprar",
+  disabled = false,
+}) {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { items } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
 
-  const [isModalConfirmationOpen, setIsModalConfirmationOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [buying, setBuying] = useState(false);
 
-  const handleSelectPaymentMethod = () => {
-    setIsModalConfirmationOpen(true);
+  const openModal = (e) => {
+    e.stopPropagation(); // <-- ANTI BURBUJA
+    onClick(e)
     setPaymentMethod("");
+    setIsModalOpen(true);
   };
 
-  const handleBuy = async () => {
-    // 👉 Si es tarjeta, redirigimos a /pago con los datos necesarios
+  const closeModal = (e) => {
+    e.stopPropagation();
+    setIsModalOpen(false);
+  };
+
+  const handleBuy = async (e) => {
+    e.stopPropagation();
+
     if (paymentMethod === "card") {
-      setIsModalConfirmationOpen(false);
+      setIsModalOpen(false);
       navigate("/pago");
       return;
     }
 
-    // 👉 Si es transferencia, creamos la orden al toque (como antes)
     try {
       setBuying(true);
+
       const { data } = await backend.post("/orders", {
         userId: user.userId,
         paymentMethod: "TRANSFER",
-        orderProductRequest: [{ productId: product.id, units: 1 }],
+        orderProductRequest: items.map((item) => ({
+          productId: item.id,
+          units: item.units,
+        })),
       });
 
       if (data.id) {
-        navigate("/orden");
-      } else {
-        console.log(data);
+        toast.success("Pago realizado correctamente");
+        navigate("/orden", { replace: true });
+
+        dispatch(fetchProducts({ isAdmin: user?.profile?.role === "ADMIN" }));
+        dispatch(cartSlice.actions.clearCart());
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
+      toast.error("Hubo un problema realizando el pago");
     } finally {
       setBuying(false);
     }
@@ -50,17 +73,26 @@ export default function ConfirmBuyComponent({ product, label = "Comprar" }) {
     <>
       <button
         type="button"
-        onClick={() => handleSelectPaymentMethod(product)}
-        className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+        disabled={disabled}
+        onClick={openModal}
+        className="flex-1 cursor-pointer rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300"
       >
         {label}
       </button>
 
-      {isModalConfirmationOpen &&
+      {isModalOpen &&
         createPortal(
-          <div className="bg-black/20 backdrop-blur-xs fixed left-0 top-0 z-50 w-screen h-screen">
-            <div className="w-fit fixed top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 bg-white px-8 py-6 rounded-xl shadow">
-              <h1 className="font-semibold">¿Con qué medio de pago deseas pagar?</h1>
+          <div
+            className="bg-black/20 backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center"
+            onClick={closeModal}
+          >
+            <div
+              className="bg-white px-8 py-6 rounded-xl shadow w-[90%] max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h1 className="font-semibold text-lg">
+                ¿Con qué medio de pago deseas pagar?
+              </h1>
 
               <div className="flex flex-col gap-2 mt-4">
                 <label className="cursor-pointer">
@@ -88,23 +120,25 @@ export default function ConfirmBuyComponent({ product, label = "Comprar" }) {
                 </label>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-6">
                 <button
-                  onClick={() => setIsModalConfirmationOpen(false)}
-                  className="flex-grow-[2] mt-6 w-full rounded-lg bg-red-700 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-800 focus:outline-none focus:ring-2"
+                  onClick={closeModal}
+                  className="flex-1 rounded-lg bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-800"
                 >
                   Cancelar
                 </button>
+
                 <button
                   onClick={handleBuy}
-                  disabled={paymentMethod.length === 0 || buying}
-                  className={`flex-grow-[2] mt-6 w-full rounded-lg px-4 py-2 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300 ${
-                    paymentMethod.length === 0 || buying
-                      ? "bg-primary opacity-50 cursor-not-allowed"
-                      : "bg-primary hover:bg-emerald-600"
-                  }`}
+                  disabled={paymentMethod === "" || buying}
+                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-bold text-white 
+                    ${
+                      paymentMethod === "" || buying
+                        ? "bg-primary opacity-50 cursor-not-allowed"
+                        : "bg-primary hover:bg-emerald-600"
+                    }`}
                 >
-                  Confirmar
+                  {buying ? "Procesando..." : "Confirmar"}
                 </button>
               </div>
             </div>

@@ -1,26 +1,20 @@
 // src/pages/PaymentPage.jsx
 import React, { useMemo, useState } from "react";
 import { useLocation, Navigate, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux'
+import cartSlice from "../redux/cartSlice";
 import cardValidator from "card-validator";
 import { backend } from "../api/backend";
 import toast from "react-hot-toast"; 
+import { fetchProducts } from '../redux/productsSlice'
+
+const moneyFormatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
 
 export default function PaymentPage() {
+  const { items, total } = useSelector((state) => state.cart)
+  const { user } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
   const navigate = useNavigate();
-
-  const { product, units = 1, userId } = state;
-  const price = product?.price ?? product?.finalPrice ?? 0;
-  const amount = price * units;
-
-  const formattedAmount = useMemo(
-    () =>
-      new Intl.NumberFormat("es-AR", {
-        style: "currency",
-        currency: "ARS",
-        maximumFractionDigits: 2,
-      }).format(amount),
-    [amount]
-  );
 
   //Estados 
   const [cardNumber, setCardNumber] = useState("");
@@ -70,21 +64,28 @@ export default function PaymentPage() {
 
     try {
       const { data } = await backend.post("/orders", {
-        userId,
+        userId: user.userId,
         paymentMethod: "CARD",
-        orderProductRequest: [{ productId: product.id, units }],
+        orderProductRequest: items.map(item => ({ productId: item.id, units: item.units }))
       });
 
       if (data?.id) {
         toast.success("Pago realizado correctamente");
-        setTimeout(() => navigate("/orden", { replace: true }), 1200);
+        navigate("/orden", { replace: true });
+
+        dispatch(fetchProducts({ isAdmin: user?.profile?.role === 'ADMIN' }))
+        dispatch(cartSlice.actions.clearCart())
       } else {
         toast.error("Error al procesar el pago");
         console.log("Respuesta inesperada:", data);
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error en el pago. Inténtalo nuevamente");
+      toast.error("Error en el pago.");
+
+      if (err.response.data.message) {
+        toast.error(err.response.data.message)
+      }
     } finally {
       setLoading(false);
     }
@@ -116,15 +117,27 @@ export default function PaymentPage() {
           <div className="relative rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6 sm:p-8 overflow-hidden">
             <h2 className="text-2xl font-bold mb-6">Resumen del pago</h2>
 
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{product?.name ?? "Producto"}</p>
-              <p className="text-sm font-medium">
-                {new Intl.NumberFormat("es-AR", {
-                  style: "currency",
-                  currency: "ARS",
-                }).format(price)}{" "}
-                × {units}
-              </p>
+            <div className="space-y-4">
+              {items.map(item => {
+                const priceUnit = item.price
+                const priceSubtotal = item.price * item.units
+
+                return (
+                <div className="flex items-center justify-between" key={item.id}>
+                  <div className="flex items-center gap-3">
+                    <img src={item?.imageUrl} className="max-w-8" />
+                    <div>
+                      <span className="font-medium">{item?.name}</span>
+                      <p className="text-gray-500 text-xs">{item?.category.description}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-bold">{moneyFormatter.format(priceSubtotal)}</span>
+                    <p className="text-[10px] text-right">{item?.units} x {moneyFormatter.format(priceUnit)}</p>
+                  </div>
+                </div>
+                )
+              })}
             </div>
 
             <hr className="my-4 border-border-light dark:border-border-dark" />
@@ -133,7 +146,7 @@ export default function PaymentPage() {
               <p className="text-base font-bold text-text-light-secondary dark:text-text-dark-secondary">
                 Total
               </p>
-              <p className="text-xl font-extrabold">{formattedAmount}</p>
+              <p className="text-xl font-extrabold">{ moneyFormatter.format(total) }</p>
             </div>
 
       
@@ -237,7 +250,7 @@ export default function PaymentPage() {
                 className="flex w-full items-center justify-center h-12 rounded-lg px-4 text-white text-base font-bold
                            bg-primary hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
               >
-                {loading ? "Procesando..." : `Pagar ${formattedAmount}`}
+                {loading ? "Procesando..." : `Pagar ${moneyFormatter.format(total)}`}
               </button>
             </form>
           </div>

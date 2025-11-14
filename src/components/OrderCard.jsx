@@ -25,15 +25,15 @@ export default function OrderCard({ order, firstImgSrc }) {
 
   const items = Array.isArray(order.orderProducts) ? order.orderProducts : [];
   const firstId = order._firstProductId;
-  const extra = Math.max(items.length - 1, 0);
   const status = String(order.status || "").toUpperCase();
   const title = TITLE_BY_STATUS[status] ?? "Orden";
+  const productsQtty = items.length
 
   const line = [
     firstId ? `productId #${firstId}` : null,
     `Cantidad: ${order._qty}`,
     `Precio: $${Number(order.totalPrice ?? order.price ?? 0).toFixed(2)}`,
-    extra > 0 ? `+ ${extra} producto${extra > 1 ? "s" : ""}` : null,
+    productsQtty > 0 ? `${productsQtty} producto${productsQtty > 1 ? "s" : ""}` : null,
   ]
     .filter(Boolean)
     .join(" • ");

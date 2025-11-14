@@ -3,6 +3,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import cartSlice from "../redux/cartSlice";
 import { Link, useNavigate } from "react-router-dom";
+import ConfirmBuyComponent from "../components/ConfirmBuyComponent";
 
 const { handleAddProduct, handleDeleteProduct, clearCart } = cartSlice.actions
 
@@ -145,7 +146,7 @@ export const CartPage = () => {
         </div>
 
         {/* Resumen */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-fit">
           <h2 className="text-[22px] font-bold text-gray-900 pb-4 border-b border-gray-200">
             Resumen de tu compra
           </h2>
@@ -161,14 +162,10 @@ export const CartPage = () => {
           </div>
 
           <div className="mt-6 flex flex-col gap-3">
-            <button
-              type="button"
-              className="w-full text-white bg-primary hover:bg-emerald-600 font-bold rounded-lg text-sm px-5 py-3 text-center disabled:opacity-60"
-              onClick={handleGoToPayment}
+            <ConfirmBuyComponent 
+              label="Finalizar compra"
               disabled={!items.length}
-            >
-              Finalizar compra
-            </button>
+            />
 
             <Link
               to="/productos"
