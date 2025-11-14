@@ -6,10 +6,7 @@ import { backend } from "../api/backend";
 import toast from "react-hot-toast"; 
 
 export default function PaymentPage() {
-  const { state } = useLocation();
   const navigate = useNavigate();
-
-  if (!state?.product) return <Navigate to="/productos" replace />;
 
   const { product, units = 1, userId } = state;
   const price = product?.price ?? product?.finalPrice ?? 0;
