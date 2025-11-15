@@ -4,6 +4,8 @@ import { fetchProducts } from "../redux/productsSlice";
 import ProductCard from "../components/ProductCard";
 import NewProductButton from "../components/NewProductButton";
 
+
+
 function capitalizar(str) {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);

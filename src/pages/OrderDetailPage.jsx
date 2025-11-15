@@ -1,7 +1,15 @@
+// src/pages/OrderDetailPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { backend } from "../api/backend";
-import { detectMime } from "../helpers/detectMime"
+import { detectMime } from "../helpers/detectMime";
+import {
+  fetchOrderById,
+  selectOrder,
+  selectOrdersLoading,
+  clearCurrent,
+} from "../redux/orderSlice";
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -16,62 +24,60 @@ const FALLBACK =
     </svg>`
   );
 
-export default function OrderDetailPage() {
+export function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
-  const [imgMap, setImgMap] = useState({});  
-  const [nameMap, setNameMap] = useState({}); 
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+
+  const order = useSelector(selectOrder);
+  const loading = useSelector(selectOrdersLoading);
+
+  const [imgMap, setImgMap] = useState({});
+  const [nameMap, setNameMap] = useState({});
 
   useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const { data } = await backend.get(`/orders/${id}`);
-        if (!ignore) setOrder(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    })();
-    return () => { ignore = true; };
-  }, [id]);
+    dispatch(fetchOrderById(id));
+    return () => dispatch(clearCurrent());
+  }, [dispatch, id]);
 
+  // imágenes + nombres de productos
   useEffect(() => {
     if (!order) return;
     const items = Array.isArray(order.orderProducts) ? order.orderProducts : [];
-    const pids = [...new Set(items.map(i => i.productId).filter(Boolean))];
+    const pids = [...new Set(items.map((i) => i.productId).filter(Boolean))];
 
     pids.forEach(async (pid) => {
-     
       if (!imgMap[pid]) {
         try {
-          const { data: ids } = await backend.get(`/products/images/${pid}`, { params: { ts: Date.now() } });
-          const list = Array.isArray(ids) ? ids : [];
-          if (list.length) {
-            const { data: b64 } = await backend.get(`/products/images`, { params: { id: list[0], ts: Date.now() } });
-            setImgMap(prev => ({ ...prev, [pid]: b64.file ? `data:${detectMime(b64.file)};base64,${b64.file}` : FALLBACK }));
+          const { data: ids } = await backend.get(`/products/images/${pid}`, {
+            params: { ts: Date.now() },
+          });
+          if (Array.isArray(ids) && ids.length) {
+            const { data } = await backend.get(`/products/images`, {
+              params: { id: ids[0], ts: Date.now() },
+            });
+            const b64 = data?.file || "";
+            const src = b64.startsWith("data:")
+              ? b64
+              : `data:${detectMime(b64)};base64,${b64}`;
+            setImgMap((prev) => ({ ...prev, [pid]: src }));
           } else {
-            setImgMap(prev => ({ ...prev, [pid]: FALLBACK }));
+            setImgMap((prev) => ({ ...prev, [pid]: FALLBACK }));
           }
         } catch {
-          setImgMap(prev => ({ ...prev, [pid]: FALLBACK }));
+          setImgMap((prev) => ({ ...prev, [pid]: FALLBACK }));
         }
       }
-     
       if (!nameMap[pid]) {
         try {
           const { data: prod } = await backend.get(`/products/${pid}`);
-          const name = prod?.name || `Producto #${pid}`;
-          setNameMap(prev => ({ ...prev, [pid]: name }));
+          setNameMap((prev) => ({ ...prev, [pid]: prod?.name || `Producto #${pid}` }));
         } catch {
-          setNameMap(prev => ({ ...prev, [pid]: `Producto #${pid}` }));
+          setNameMap((prev) => ({ ...prev, [pid]: `Producto #${pid}` }));
         }
       }
     });
-    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
   if (loading) return <div className="p-6">Cargando orden…</div>;
@@ -96,7 +102,7 @@ export default function OrderDetailPage() {
             const name = nameMap[pid] || `Producto #${pid}`;
             const img = imgMap[pid] || FALLBACK;
             const unit = Number(it.price ?? 0);
-            const qty = Number(it.units || it.unit || 1);
+            const qty = Number(it.units ?? it.unit ?? 1);
             const subtotal = unit * qty;
 
             return (
@@ -106,7 +112,7 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-[#111713]">{name}</p>
-                  <p className="text-sm text-[#111713]">productId #{pid} - Cantidad {qty}</p>
+                  <p className="text-sm text-[#111713]">Cantidad {qty}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-[#64876e]">Precio Unitario</p>
@@ -143,3 +149,5 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+
+export default OrderDetailPage; // 👈 default

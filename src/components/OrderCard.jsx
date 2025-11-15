@@ -30,7 +30,6 @@ export default function OrderCard({ order, firstImgSrc }) {
   const productsQtty = items.length
 
   const line = [
-    firstId ? `productId #${firstId}` : null,
     `Cantidad: ${order._qty}`,
     `Precio: $${Number(order.totalPrice ?? order.price ?? 0).toFixed(2)}`,
     productsQtty > 0 ? `${productsQtty} producto${productsQtty > 1 ? "s" : ""}` : null,

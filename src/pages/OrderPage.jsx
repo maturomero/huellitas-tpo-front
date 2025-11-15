@@ -165,15 +165,6 @@ export const OrderPage = () => {
         </button>
       </div>
 
-      <div className="max-w-xl mb-3">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar Orden"
-          className="w-full h-12 border border-[#dce5de] rounded-xl px-4 placeholder:text-[#64876e] focus:outline-none"
-        />
-      </div>
-
       <div className="flex h-10 items-center rounded-xl bg-[#f0f4f1] p-1 max-w-xl mb-6">
         {UI_STATUS.map((s) => {
           const active = statusFilter === s;
