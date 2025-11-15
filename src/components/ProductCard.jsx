@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { backend } from "../api/backend";
-import { useSelector, useDispatch } from 'react-redux'
-import { deleteProduct } from "../redux/productsSlice";
+import { useSelector, useDispatch } from "react-redux";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
 import { detectMime } from "../helpers/detectMime";
-import toast from "react-hot-toast"; 
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart } from "lucide-react";
 import cartSlice from "../redux/cartSlice";
+import ConfirmDeleteProduct from "./ConfirmDeleteProduct";
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -23,6 +22,11 @@ const FALLBACK =
   );
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const moneyFormatter = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+});
 
 export default function ProductCard({ product }) {
   const { user } = useSelector((state) => state.auth);
@@ -50,7 +54,6 @@ export default function ProductCard({ product }) {
     product?.imageIds?.[0] ?? product?.productImages?.[0]?.id ?? null;
 
   const [src, setSrc] = useState(FALLBACK);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -118,21 +121,6 @@ export default function ProductCard({ product }) {
     };
   }, [product?.id, firstIdFromList]);
 
-  const handleDelete = async (e) => {
-    e.stopPropagation();
-    if (deleting) return;
-    try {
-      setDeleting(true);
-      dispatch(deleteProduct(product.id));
-      toast.success("Producto eliminado correctamente");
-    } catch (e) {
-      const msg = e?.response?.data?.message || "Error eliminando producto.";
-      toast.error(msg);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   const handleAddToCart = (e) => {
     e.stopPropagation();
     dispatch(
@@ -146,24 +134,8 @@ export default function ProductCard({ product }) {
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      
-      {user?.profile?.role === "ADMIN" && (
-        <div className="w-full flex justify-end">
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="bg-red-400 size-8 rounded-full flex items-center justify-center m-4 mb-2 hover:opacity-90 disabled:opacity-60"
-            title={deleting ? "Eliminando..." : "Eliminar"}
-          >
-            <span className="text-white font-medium">
-              {deleting ? "…" : "x"}
-            </span>
-          </button>
-        </div>
-      )}
-
+      {/* Imagen + nombre */}
       <div onClick={goDetail} className="cursor-pointer">
-
         <div className="relative w-full overflow-hidden aspect-[4/3] bg-white">
           <img
             src={src}
@@ -186,14 +158,15 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
+      {/* Precio + acciones */}
       <div className="p-4 pt-2 flex flex-col gap-2">
         {hasTransfer ? (
           <div className="flex flex-col gap-1">
             <span className="font-medium text-[22px]">
-              ${priceNum.toFixed(2)}
+              {moneyFormatter.format(priceNum)}
             </span>
             <span className="font-bold text-sm text-emerald-600">
-              ${transferNum.toFixed(2)}{" "}
+              {moneyFormatter.format(transferNum)}
               <span className="ml-1 rounded bg-emerald-50 px-2 py-0.5 text-emerald-700 text-[11px] font-semibold">
                 Abonando con transferencia
               </span>
@@ -205,26 +178,28 @@ export default function ProductCard({ product }) {
 
         <div className="flex items-center gap-2 w-full mt-2">
           {user?.profile?.role === "USER" && (
-            <>
-              <button
-                onClick={handleAddToCart}
-                className="cursor-pointer flex-1 w-full text-white hover:bg-primary/90 font-bold rounded-lg text-sm px-4 py-2 bg-primary flex items-center gap-2 justify-center"
-              >
-                <ShoppingCart className="size-4 text-white stroke-2" /> Añadir
-              </button>
-            </>
+            <button
+              onClick={handleAddToCart}
+              className="cursor-pointer flex-1 w-full text-white hover:bg-primary/90 font-bold rounded-lg text-sm px-4 py-2 bg-primary flex items-center gap-2 justify-center"
+            >
+              <ShoppingCart className="size-4 text-white stroke-2" /> Añadir
+            </button>
           )}
 
           {user?.profile?.role === "ADMIN" && (
-            <Link
-              to={`/productos/${product.id}/editar`}
-              className="flex-[2] mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-center text-white transition-colors hover:bg-emerald-600"
-            >
-              Editar
-            </Link>
+            <div className="flex w-full gap-2">
+              <Link
+                to={`/productos/${product.id}/editar`}
+                className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-center text-white transition-colors hover:bg-emerald-600"
+              >
+                Editar
+              </Link>
+
+              <ConfirmDeleteProduct product={product} label="Eliminar" />
+            </div>
           )}
         </div>
       </div>
     </li>
   );
-};
+}

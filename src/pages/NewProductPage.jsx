@@ -1,5 +1,7 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { backend } from "../api/backend";
 import AnimalChipsSelector from "../components/AnimalChipsSelector";
 import { useSelector, useDispatch } from 'react-redux'
 import { createProduct, updateProduct, deleteProduct, uploadProductImages } from "../redux/productsSlice";
@@ -72,6 +74,10 @@ const NewProductPage = () => {
     if (action === "editar") {
       loadProduct();
     }
+
+    return () => {
+      dispatch(productsSlice.actions.clearCurrentProduct())
+    }
   }, [productId]);
 
   const canSubmit = useMemo(() => {
@@ -120,7 +126,7 @@ const NewProductPage = () => {
       setSubmitting(true);
 
       if (isCreate) {
-        const payload = {
+        const requestPayload = {
           name: name.trim(),
           price: Number(price),
           stock: Number(stock),
@@ -128,11 +134,11 @@ const NewProductPage = () => {
           categoryId: Number(categoryId),
           animalId: animalIds.map(Number),
         };
-        const { data: created } = await dispatch(createProduct(payload));
-        const newId = Number(created?.id ?? created?.productId);
+        const { payload } = await dispatch(createProduct(requestPayload));
+        const newId = Number(payload?.id ?? payload?.productId);
         if (!Number.isFinite(newId)) throw new Error("ID de producto inválido al crear.");
 
-        dispatch(uploadProductImages({ id: idNum, files }))
+        dispatch(uploadProductImages({ id: newId, files }))
 
         toast.success("Producto creado con éxito"); 
         navigate("/productos");
@@ -343,4 +349,3 @@ const NewProductPage = () => {
 };
 
 export default NewProductPage;
-

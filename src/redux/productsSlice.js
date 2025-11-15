@@ -1,3 +1,4 @@
+
 // src/redux/productsSlice.js
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { backend } from '../api/backend'
@@ -71,10 +72,12 @@ const productsSlice = createSlice({
   },
   reducers: {
     getProductById: (state, action) => {
-      console.log(action, state.items)
       state.currentProduct = action.payload.raw
         ? state.items.find(item => item.id == action.payload.id).raw
         : state.items.find(item => item.id == action.payload.id)
+    },
+    clearCurrentProduct: (state) => {
+      state.currentProduct = {}
     }
   },
   extraReducers: (builder) => {

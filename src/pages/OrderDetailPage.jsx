@@ -112,7 +112,7 @@ export function OrderDetailPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-[#111713]">{name}</p>
-                  <p className="text-sm text-[#111713]">productId #{pid} - Cantidad {qty}</p>
+                  <p className="text-sm text-[#111713]">Cantidad {qty}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-[#64876e]">Precio Unitario</p>
