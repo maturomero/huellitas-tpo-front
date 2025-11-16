@@ -87,7 +87,3 @@ const cartSlice = createSlice({
 
 
 export default cartSlice;
-
-
-
-

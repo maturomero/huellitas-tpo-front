@@ -71,43 +71,43 @@ const ordersSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // list
-      .addCase(fetchOrders.pending, (s) => {
-        s.loading = true;
-        s.error = null;
+      .addCase(fetchOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchOrders.fulfilled, (s, a) => {
-        s.loading = false;
-        s.items = a.payload;
+      .addCase(fetchOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
       })
-      .addCase(fetchOrders.rejected, (s, a) => {
-        s.loading = false;
-        s.error = a.error.message || "No se pudieron traer las órdenes";
+      .addCase(fetchOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "No se pudieron traer las órdenes";
       })
 
       // detail
-      .addCase(fetchOrderById.pending, (s) => {
-        s.loading = true;
-        s.error = null;
-        s.current = null;
+      .addCase(fetchOrderById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.current = null;
       })
-      .addCase(fetchOrderById.fulfilled, (s, a) => {
-        s.loading = false;
-        s.current = a.payload;
+      .addCase(fetchOrderById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.current = action.payload;
       })
-      .addCase(fetchOrderById.rejected, (s, a) => {
-        s.loading = false;
-        s.error = a.error.message || "No se pudo traer la orden";
+      .addCase(fetchOrderById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "No se pudo traer la orden";
       })
 
       // create
-      .addCase(createOrder.fulfilled, (s, a) => {
-        s.items = [a.payload, ...s.items];
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.items = [action.payload, ...state.items];
       })
 
       // delete
-      .addCase(deleteOrder.fulfilled, (s, a) => {
-        s.items = s.items.filter((o) => o.id !== a.payload);
-        if (s.current?.id === a.payload) s.current = null;
+      .addCase(deleteOrder.fulfilled, (state, action) => {
+        state.items = state.items.filter((o) => o.id !== action.payload);
+        if (state.current?.id === action.payload) state.current = null;
       });
   },
 });
