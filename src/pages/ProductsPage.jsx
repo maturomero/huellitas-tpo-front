@@ -12,10 +12,11 @@ function capitalizar(str) {
 }
 
 export const ProductsPage = () => {
+  const user = useSelector((state) => state.auth.user)
   const products = useSelector((state) => state.products.items);
   const loading = useSelector((state) => state.products.loading);
 
-  // Filtros
+  
   const [q, setQ] = useState("");
   const [animal, setAnimal] = useState("");
   const [category, setCategory] = useState("");
@@ -207,9 +208,12 @@ export const ProductsPage = () => {
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+              {filtered.map((p) => { 
+                if (p.stock === 0 && user?.profile?.role !== 'ADMIN') return null
+                return (
+                  <ProductCard key={p.id} product={p} />
+                )
+              })}
             </div>
           )}
         </section>

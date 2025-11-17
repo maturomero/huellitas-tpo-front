@@ -30,7 +30,7 @@ export const RegisterPage = () => {
     e.preventDefault();
     setError("");
 
-    // ⚠️ Validaciones mínimas con notificación
+ 
     if (!canSubmit) {
       const msg = !passwordsMatch
         ? "Completá todos los campos."
@@ -43,12 +43,12 @@ export const RegisterPage = () => {
       setSubmitting(true);
       await dispatch(register({ fullName, email, password }));
       toast.success("Cuenta creada con éxito");
-      // Redirección la maneja <Navigate /> cuando status cambia a 'authenticated'
+      
     } catch (err) {
-      // Mensaje que viene del backend (tu AuthContext hace throw)
+    
       const backendMessage = err?.response?.data?.message || "";
 
-      // Detectar “cuenta ya existe” (ajustá los includes si tu backend usa otro texto)
+  
       const isEmailIssue = /email|existe|existente|registrad/i.test(backendMessage);
 
       const msg = isEmailIssue

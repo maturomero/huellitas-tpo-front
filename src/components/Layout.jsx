@@ -6,6 +6,7 @@ import { ShoppingCart } from 'lucide-react'
 import { authSlice } from "../redux/authSlice";
 import { fetchProducts } from "../redux/productsSlice";
 import { fetchAnimals, fetchCategories } from "../redux/attributesSlice";
+import { fetchOrders } from '../redux/orderSlice'
 
 import logo from "../assets/images/LOGO.jpg";
 
@@ -18,15 +19,19 @@ export const Layout = () => {
   const subject = encodeURIComponent("Consulta desde la web");
   const body = encodeURIComponent("Hola Huellitas, tengo una consulta sobre...");
 
-  // cargar animales y categorías
+  
   useEffect(() => {
     dispatch(fetchAnimals());
     dispatch(fetchCategories());
   }, []);
 
-  // cargar productos según rol
   useEffect(() => {
-    dispatch(fetchProducts({ isAdmin: user?.profile?.role === "ADMIN" }));
+    dispatch(fetchOrders())
+  }, []);
+
+  
+  useEffect(() => {
+    dispatch(fetchProducts());
   }, [user]);
 
   const handleLogout = () => {
@@ -37,7 +42,7 @@ export const Layout = () => {
     <div className="bg-background-light font-sans min-h-screen flex flex-col">
       <div className="container mx-auto px-4 flex-1 flex flex-col">
         <header className="py-6 flex justify-between items-center">
-          {/* Logo + nombre */}
+          
           <div className="flex items-center space-x-3">
             <Link to="/">
               <img
@@ -54,7 +59,7 @@ export const Layout = () => {
           </div>
 
           <div className="flex items-center space-x-8">
-            {/* Menu navegación */}
+            
             <nav className="hidden md:flex space-x-8">
               <NavLink
                 to="/"
@@ -79,7 +84,7 @@ export const Layout = () => {
                 Productos
               </NavLink>
 
-              {/* Si NO está autenticado */}
+           
               {status === "not-authenticated" && (
                 <NavLink
                   to="/login"
@@ -93,7 +98,7 @@ export const Layout = () => {
                 </NavLink>
               )}
 
-              {/* Si es usuario normal */}
+             
               {user?.profile?.role === "USER" && (
                 <>
                   <NavLink
@@ -110,7 +115,7 @@ export const Layout = () => {
                     Ordenes
                   </NavLink>
 
-                  {/* 👇 AGREGADO: Link al carrito (no afecta nada si no querés utilizarlo) */}
+                  
                   <NavLink
                     end
                     to="/carrito"
@@ -130,7 +135,7 @@ export const Layout = () => {
               )}
             </nav>
 
-            {/* Si está autenticado */}
+           
             {status === "authenticated" && (
               <>
                 <p className="text-sm text-gray-600">
@@ -148,19 +153,19 @@ export const Layout = () => {
           </button>
         </header>
 
-        {/* Vista de cada página */}
+        
         <main className="flex-1">
           <Outlet />
         </main>
 
-        {/* Footer */}
+        
         <footer className="text-center py-8 border-t border-gray-200">
           <p className="text-subtext-light">
             © 2025 Huellitas PetShop. Todos los derechos reservados.
           </p>
 
           <div className="flex justify-center space-x-4 mt-4">
-            {/* Facebook */}
+            
             <a
               href="https://www.facebook.com/profile.php?id=61581743836499"
               target="_blank"
@@ -182,7 +187,6 @@ export const Layout = () => {
               </svg>
             </a>
 
-            {/* Email */}
             <a
               href={`mailto:${EMAIL}?subject=${subject}&body=${body}`}
               aria-label="Enviar correo"
@@ -199,7 +203,7 @@ export const Layout = () => {
               </svg>
             </a>
 
-            {/* Instagram */}
+           
             <a
               href="https://www.instagram.com/petshophuellitas04/"
               target="_blank"
