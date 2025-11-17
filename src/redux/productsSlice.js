@@ -1,9 +1,9 @@
 
-// src/redux/productsSlice.js
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { backend } from '../api/backend'
 
-//  mismo mapeo que usabas en el hook para no romper la UI
+
 const mapProduct = (p) => ({
   id: p.id,
   name: p.name,
@@ -15,29 +15,57 @@ const mapProduct = (p) => ({
   animals: p.animal,
   animal: Array.isArray(p.animal) && p.animal.length ? p.animal[0].name : "",
   category: p.category?.description || p.category?.name || p.categoryName || "",
+  imageSrc: p.file,
   raw: p,
 })
 
 const URL = '/products'
 
-// =============== Thunks (igual de simples que el ejemplo) ===============
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async ({ isAdmin }) => {
-  // versión básica (como el hook para usuarios NO admin)
+const returnProductsWithImage = async (products = []) => {
+  const productImages = await Promise.all(products.map(async item => {
+    if (!item?.productImages?.[0]?.id) {
+      return { id: item.id, file: '' }
+    }
+
+    const imageItem = await backend.get(`/products/images`, {
+      params: { id: item?.productImages?.[0]?.id }
+    })
+
+    const mime = imageItem.data?.file.startsWith("iVBORw0K")
+      ? "image/png"
+      : "image/jpeg";
+
+    return { id: item.id, file: `data:${mime};base64,${imageItem.data?.file}` }
+  }))
   
-  const { data } = await backend.get(`${URL}?sinStock=${isAdmin ? 1 : 0}`)
-  return data.map(mapProduct)
+  return products.map(item => {
+    const productImage = productImages.find(productImage => productImage.id == item.id)
+    return mapProduct({
+      ...item,
+      file: productImage.file
+    })
+  })
+}
+
+
+export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
+  const { data } = await backend.get(`${URL}?sinStock=1`)
+  const productsWithImages = await returnProductsWithImage(data)
+  return productsWithImages
 })
 
 export const createProduct = createAsyncThunk('products/createProduct', async (newProduct) => {
-  // espera { name, price, stock, status, categoryId, animalId: number[] }
+  
   const { data } = await backend.post(URL, newProduct)
-  return mapProduct(data)
+  const productWithImage = await returnProductsWithImage([data])
+  return productWithImage[0]
 })
 
 export const updateProduct = createAsyncThunk('products/updateProduct', async ({ id, changes }) => {
   await backend.patch(`${URL}/${id}`, changes)
-  const { data } = await backend.get(`${URL}/${id}`) // devolvemos el actualizado
-  return mapProduct(data)
+  const { data } = await backend.get(`${URL}/${id}`) 
+  const productWithImage = await returnProductsWithImage([data])
+  return productWithImage[0]
 })
 
 export const deleteProduct = createAsyncThunk('products/deleteProduct', async (id) => {
@@ -45,7 +73,6 @@ export const deleteProduct = createAsyncThunk('products/deleteProduct', async (i
   return id
 })
 
-// (opcional) subir imágenes con FormData
 export const uploadProductImages = createAsyncThunk(
   'products/uploadProductImages',
   async ({ id, files }) => {
@@ -57,11 +84,13 @@ export const uploadProductImages = createAsyncThunk(
       })
     }
     const { data } = await backend.get(`${URL}/${id}`)
-    return mapProduct(data)
+    const productWithImage = await returnProductsWithImage([data])
+
+    return productWithImage[0]
   }
 )
 
-// =============== Slice ===============
+
 const productsSlice = createSlice({
   name: 'products',
   initialState: {
@@ -78,11 +107,30 @@ const productsSlice = createSlice({
     },
     clearCurrentProduct: (state) => {
       state.currentProduct = {}
+    },
+    decrementProductStockById: (state, action) => {
+      const { id, units } = action.payload
+
+      state.items = state.items.map(item => {
+        if (item.id == id) {
+          const updatedStock = item.stock - units
+          return {
+            ...item,
+            stock: updatedStock > 0 ? updatedStock : 0,
+            raw: {
+              ...item.raw,
+              stock: updatedStock > 0 ? updatedStock : 0,
+            }
+          }
+        }
+
+        return item
+      })
     }
   },
   extraReducers: (builder) => {
     builder
-      // fetch
+
       .addCase(fetchProducts.pending, (state) => {
         state.loading = true
         state.error = null
@@ -97,23 +145,21 @@ const productsSlice = createSlice({
         state.error = action.error.message
       })
 
-      // create
+
       .addCase(createProduct.fulfilled, (state, action) => {
         state.items = [action.payload, ...state.items]
       })
 
-      // update
+
       .addCase(updateProduct.fulfilled, (state, action) => {
         const i = state.items.findIndex(p => p.id === action.payload.id)
         if (i !== -1) state.items[i] = action.payload
       })
 
-      // delete
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.items = state.items.filter(p => p.id !== action.payload)
       })
 
-      // upload images (opcional)
       .addCase(uploadProductImages.fulfilled, (state, action) => {
         const i = state.items.findIndex(p => p.id === action.payload.id)
         if (i !== -1) state.items[i] = action.payload

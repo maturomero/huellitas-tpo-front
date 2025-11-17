@@ -1,15 +1,14 @@
-// src/pages/OrderDetailPage.jsx
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { backend } from "../api/backend";
-import { detectMime } from "../helpers/detectMime";
 import {
-  fetchOrderById,
   selectOrder,
   selectOrdersLoading,
   clearCurrent,
+  getOrderById
 } from "../redux/orderSlice";
+import { backend } from "../api/backend";
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -30,55 +29,67 @@ export function OrderDetailPage() {
   const dispatch = useDispatch();
 
   const order = useSelector(selectOrder);
+  const products = useSelector((state) => state.products?.items)
   const loading = useSelector(selectOrdersLoading);
 
   const [imgMap, setImgMap] = useState({});
   const [nameMap, setNameMap] = useState({});
 
   useEffect(() => {
-    dispatch(fetchOrderById(id));
+    dispatch(getOrderById(Number(id)));
     return () => dispatch(clearCurrent());
   }, [dispatch, id]);
 
-  // imágenes + nombres de productos
+ 
   useEffect(() => {
     if (!order) return;
+
     const items = Array.isArray(order.orderProducts) ? order.orderProducts : [];
     const pids = [...new Set(items.map((i) => i.productId).filter(Boolean))];
 
     pids.forEach(async (pid) => {
       if (!imgMap[pid]) {
-        try {
-          const { data: ids } = await backend.get(`/products/images/${pid}`, {
-            params: { ts: Date.now() },
-          });
-          if (Array.isArray(ids) && ids.length) {
-            const { data } = await backend.get(`/products/images`, {
-              params: { id: ids[0], ts: Date.now() },
-            });
-            const b64 = data?.file || "";
-            const src = b64.startsWith("data:")
-              ? b64
-              : `data:${detectMime(b64)};base64,${b64}`;
-            setImgMap((prev) => ({ ...prev, [pid]: src }));
-          } else {
-            setImgMap((prev) => ({ ...prev, [pid]: FALLBACK }));
+        const product = products?.find(item => item.id == pid)
+        
+        if (product?.imageSrc) {
+          setImgMap(prev => ({ ...prev, [pid]: product.imageSrc }))
+        } else {
+          try {
+            const deletedRes = await backend.get(`/products/deleted/${pid}`)
+            const imgId = deletedRes?.data?.productImages?.[0]?.id
+
+            if (!imgId) {
+              setImgMap(prev => ({ ...prev, [pid]: FALLBACK }))
+              return
+            }
+
+            const imageFile = await backend.get(`/products/images`, {
+              params: { id: imgId }
+            })
+
+            console.log(imageFile)
+
+            const mime = imageFile.data?.file.startsWith("iVBORw0K")
+              ? "image/png"
+              : "image/jpeg"
+
+            const base64 = `data:${mime};base64,${imageFile.data?.file}`
+
+            setImgMap(prev => ({ ...prev, [pid]: base64 }))
+          } catch {
+            setImgMap(prev => ({ ...prev, [pid]: FALLBACK }))
           }
-        } catch {
-          setImgMap((prev) => ({ ...prev, [pid]: FALLBACK }));
         }
       }
+
       if (!nameMap[pid]) {
-        try {
-          const { data: prod } = await backend.get(`/products/${pid}`);
-          setNameMap((prev) => ({ ...prev, [pid]: prod?.name || `Producto #${pid}` }));
-        } catch {
-          setNameMap((prev) => ({ ...prev, [pid]: `Producto #${pid}` }));
-        }
+        const fallbackName = items.find(item => item.productId == pid)?.name
+        const name = products?.find(item => item.id == pid)?.name || fallbackName
+        setNameMap(prev => ({ ...prev, [pid]: name }))
       }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order]);
+    })
+  }, [order, products])
+
 
   if (loading) return <div className="p-6">Cargando orden…</div>;
   if (!order) return <div className="p-6">Orden no encontrada.</div>;
@@ -108,7 +119,7 @@ export function OrderDetailPage() {
             return (
               <div key={it.id} className="flex gap-3 items-center">
                 <div className="w-28 h-20 rounded-lg overflow-hidden bg-white">
-                  <img src={img} alt={name} className="w-full h-full object-contain" onError={(e)=>e.currentTarget.src=FALLBACK}/>
+                  <img src={img} alt={name} className="w-full h-full object-contain" onError={(e) => e.currentTarget.src = FALLBACK} />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-[#111713]">{name}</p>
@@ -150,4 +161,4 @@ export function OrderDetailPage() {
   );
 }
 
-export default OrderDetailPage; // 👈 default
+export default OrderDetailPage; 

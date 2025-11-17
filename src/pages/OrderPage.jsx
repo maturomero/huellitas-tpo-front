@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { backend } from "../api/backend";
+import { useSelector } from 'react-redux'
 import OrderCard from "../components/OrderCard";
-import { detectMime } from "../helpers/detectMime"
 
 const FALLBACK =
   "data:image/svg+xml;utf8," +
@@ -30,53 +30,11 @@ const UI_TO_API = { TODOS: "ALL", PENDIENTE: "PENDING", APROBADO: "APPROVED" };
 
 export const OrderPage = () => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { items: orders, loading } = useSelector((state) => state.orders)
+  const products = useSelector((state) => state.products.items)
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [q, setQ] = useState("");
-  const [imgMap, setImgMap] = useState({}); 
-
-  useEffect(() => {
-    let ignore = false;
-    const ctrl = new AbortController();
-    (async () => {
-      try {
-        const { data } = await backend.get("/orders", { signal: ctrl.signal });
-        if (!ignore && Array.isArray(data)) setOrders(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    })();
-    return () => {
-      ignore = true;
-      ctrl.abort();
-    };
-  }, []);
-
-  async function loadFirstImageSrc(productId) {
-    try {
-      
-      const { data: ids } = await backend.get(`/products/images/${productId}`, {
-        params: { ts: Date.now() }, // anti-cache
-      });
-      const list = Array.isArray(ids) ? ids : [];
-      if (list.length === 0) return FALLBACK;
-
-      const { data: raw } = await backend.get(`/products/images`, {
-        params: { id: list[0], ts: Date.now() },
-      });
-
-      const b64 = raw.file
-    
-      return b64.startsWith("data:")
-        ? b64
-        : `data:${detectMime(b64)};base64,${b64}`;
-    } catch {
-      return FALLBACK;
-    }
-  }
+  const [imgMap, setImgMap] = useState({});
 
   const withComputed = useMemo(() => {
     return orders.map((o) => {
@@ -132,16 +90,39 @@ export const OrderPage = () => {
       (a, b) => new Date(b.key).getTime() - new Date(a.key).getTime()
     );
   }, [filtered]);
-
+  
   useEffect(() => {
     const uniqueFirstIds = Array.from(
       new Set(filtered.map((o) => o._firstProductId).filter(Boolean))
     );
-    uniqueFirstIds.forEach(async (pid) => {
-      if (imgMap[pid]) return; 
-      const src = await loadFirstImageSrc(pid);
-      setImgMap((prev) => ({ ...prev, [pid]: src }));
-    });
+     uniqueFirstIds.forEach(async pid => {
+    if (imgMap[pid]) return
+    
+    const found = products?.find(item => item.id == pid)
+
+    if (found) {
+      setImgMap(prev => ({ ...prev, [pid]: found.imageSrc }))
+      return
+    }
+
+    try {
+      const deletedRes = await backend.get(`/products/deleted/${pid}`)
+      const imageId = deletedRes?.data?.productImages?.[0]?.id
+      
+      if (!imageId) {
+        setImgMap(prev => ({ ...prev, [pid]: FALLBACK }))
+        return
+      }
+
+      const imgRes = await backend.get(`/products/images`, { params: { id: imageId } })
+      const mime = imgRes.data?.file.startsWith("iVBORw0K") ? "image/png" : "image/jpeg"
+      const base64 = `data:${mime};base64,${imgRes.data?.file}`
+
+      setImgMap(prev => ({ ...prev, [pid]: base64 }))
+    } catch {
+      setImgMap(prev => ({ ...prev, [pid]: FALLBACK }))
+    }
+  })
     
   }, [filtered]);
 

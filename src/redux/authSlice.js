@@ -12,12 +12,8 @@ export const login = createAsyncThunk(
             profile: null
         }
 
-        window.localStorage.setItem("user", JSON.stringify(userData))
-
         const responseUserData = await backend.get(`/users/${userData.userId}`)
         userData.profile = responseUserData.data
-
-        window.localStorage.setItem("user", JSON.stringify(userData))
 
         return {
             user: userData,
@@ -42,12 +38,8 @@ export const register = createAsyncThunk(
             profile: null
         }
 
-        window.localStorage.setItem("user", JSON.stringify(userData))
-
         const responseUserData = await backend.get(`/users/${userData.userId}`)
         userData.profile = responseUserData.data
-
-        window.localStorage.setItem("user", JSON.stringify(userData))
 
         return {
             user: userData,
@@ -56,35 +48,16 @@ export const register = createAsyncThunk(
     }
 )
 
-export const validateSession = createAsyncThunk(
-    "auth/validateSession",
-    async (_, { getState }) => {
-        const state = getState().state
-        
-        if (state?.auth?.user?.accessToken) {
-            await backend.get('/products?sinStock=0')
-            return {
-                status: 'authenticated'
-            }
-        }
-
-        clearSession(state)
-    }
-)
-
 const clearSession = (state) => {
     state.status = "not-authenticated"
     state.user = null
-    window.localStorage.removeItem("user")
 }
 
 export const authSlice = createSlice({
     name: "auth",
     initialState: {
-        status: "checking",
-        user: window.localStorage.getItem('user')
-            ? JSON.parse(window.localStorage.getItem('user'))
-            : null
+        status: "not-authenticated",
+        user: null
     },
     reducers: {
         logout: (state) => {
@@ -117,17 +90,6 @@ export const authSlice = createSlice({
             .addCase(register.rejected, (state, action) => {
                 state.status = 'not-authenticated'
                 state.user = null
-            })
-
-        builder
-            .addCase(validateSession.pending, (state) => {
-                state.status = 'checking'
-            })
-            .addCase(validateSession.fulfilled, (state, action) => {
-                state.status = action.payload.status
-            })
-            .addCase(validateSession.rejected, (state) => {
-                clearSession(state)
             })
     }
 })

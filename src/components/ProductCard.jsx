@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { backend } from "../api/backend";
 import { useSelector, useDispatch } from "react-redux";
 import ConfirmBuyComponent from "./ConfirmBuyComponent";
-import { detectMime } from "../helpers/detectMime";
 import { ShoppingCart } from "lucide-react";
 import cartSlice from "../redux/cartSlice";
 import ConfirmDeleteProduct from "./ConfirmDeleteProduct";
@@ -55,72 +53,6 @@ export default function ProductCard({ product }) {
 
   const [src, setSrc] = useState(FALLBACK);
 
-  useEffect(() => {
-    let ignore = false;
-    const ctrl = new AbortController();
-
-    async function fetchFirstImageId(productId) {
-      for (let i = 0; i < 10; i++) {
-        try {
-          const { data } = await backend.get(`/products/images/${productId}`, {
-            signal: ctrl.signal,
-            params: { ts: Date.now() },
-          });
-          if (ignore) return null;
-          const ids = Array.isArray(data) ? data : [];
-          if (ids.length) return ids[0];
-        } catch {}
-        await sleep(500 + i * 300);
-      }
-      return null;
-    }
-
-    async function fetchBase64ById(id) {
-      for (let i = 0; i < 10; i++) {
-        try {
-          const { data } = await backend.get(`/products/images`, {
-            signal: ctrl.signal,
-            params: { id, ts: Date.now() },
-          });
-          if (ignore) return null;
-          const b64 = data?.file;
-          if (b64) return b64;
-        } catch {}
-        await sleep(500 + i * 300);
-      }
-      return null;
-    }
-
-    async function load() {
-      try {
-        setSrc(FALLBACK);
-
-        let imageId = firstIdFromList;
-        if (!imageId && product?.id) {
-          imageId = await fetchFirstImageId(product.id);
-        }
-        if (!imageId) return;
-
-        const base64 = await fetchBase64ById(imageId);
-        if (!base64) return;
-
-        if (base64.startsWith("data:")) {
-          setSrc(base64);
-        } else {
-          const mime = detectMime(base64) || "image/jpeg";
-          setSrc(`data:${mime};base64,${base64}`);
-        }
-      } catch {}
-    }
-
-    load();
-
-    return () => {
-      ignore = true;
-      ctrl.abort();
-    };
-  }, [product?.id, firstIdFromList]);
-
   const handleAddToCart = (e) => {
     e.stopPropagation();
     dispatch(
@@ -134,11 +66,11 @@ export default function ProductCard({ product }) {
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      {/* Imagen + nombre */}
+    
       <div onClick={goDetail} className="cursor-pointer">
         <div className="relative w-full overflow-hidden aspect-[4/3] bg-white">
           <img
-            src={src}
+            src={product.file || product.imageSrc}
             alt={product.name || "Producto"}
             className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
             onError={() => setSrc(FALLBACK)}
@@ -158,7 +90,7 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
-      {/* Precio + acciones */}
+     
       <div className="p-4 pt-2 flex flex-col gap-2">
         {hasTransfer ? (
           <div className="flex flex-col gap-1">

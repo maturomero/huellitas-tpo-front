@@ -3,6 +3,7 @@ import { authSlice } from './authSlice'
 import productsSlice from './productsSlice'
 import attributesReducer from './attributesSlice'
 import cartSlice from './cartSlice'
+import { injectAuth } from '../api/backend'
 import ordersReducer from './orderSlice'
 
 export const store = configureStore({
@@ -14,3 +15,5 @@ export const store = configureStore({
         orders: ordersReducer.reducer,
     }
 })
+
+injectAuth(store)

@@ -1,12 +1,12 @@
-// src/pages/PaymentPage.jsx
+
 import React, { useMemo, useState } from "react";
 import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
 import cartSlice from "../redux/cartSlice";
 import cardValidator from "card-validator";
-import { backend } from "../api/backend";
 import toast from "react-hot-toast"; 
-import { fetchProducts } from '../redux/productsSlice'
+import productsSlice from '../redux/productsSlice'
+import { createOrder } from "../redux/orderSlice";
 
 const moneyFormatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
 
@@ -16,7 +16,7 @@ export default function PaymentPage() {
   const dispatch = useDispatch()
   const navigate = useNavigate();
 
-  //Estados 
+
   const [cardNumber, setCardNumber] = useState("");
   const [cardType, setCardType] = useState(null);
   const [isValid, setIsValid] = useState(null);
@@ -63,17 +63,25 @@ export default function PaymentPage() {
     setLoading(true);
 
     try {
-      const { data } = await backend.post("/orders", {
+      const { payload: data } = await dispatch(createOrder({
         userId: user.userId,
         paymentMethod: "CARD",
-        orderProductRequest: items.map(item => ({ productId: item.id, units: item.units }))
-      });
+        orderProductRequest: items.map((item) => ({
+          productId: item.id,
+          units: item.units,
+        })),
+      }))
 
       if (data?.id) {
+        items.forEach(item => (
+           dispatch(productsSlice.actions.decrementProductStockById({
+             id: item.id,
+             units: item.units
+           })
+         )))
         toast.success("Pago realizado correctamente");
         navigate("/orden", { replace: true });
 
-        dispatch(fetchProducts({ isAdmin: user?.profile?.role === 'ADMIN' }))
         dispatch(cartSlice.actions.clearCart())
       } else {
         toast.error("Error al procesar el pago");
@@ -125,7 +133,7 @@ export default function PaymentPage() {
                 return (
                 <div className="flex items-center justify-between" key={item.id}>
                   <div className="flex items-center gap-3">
-                    <img src={item?.imageUrl} className="max-w-8" />
+                    <img src={item?.imageSrc || item?.file} className="max-w-8" />
                     <div>
                       <span className="font-medium">{item?.name}</span>
                       <p className="text-gray-500 text-xs">{item?.category.description}</p>

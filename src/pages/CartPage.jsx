@@ -1,4 +1,4 @@
-// src/pages/CartPage.jsx
+
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import cartSlice from "../redux/cartSlice";
@@ -58,7 +58,7 @@ export const CartPage = () => {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Lista de productos */}
+        
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => {
             const categoryText =
@@ -79,7 +79,7 @@ export const CartPage = () => {
 
             const itemPrice = moneyFormatter.format(item.price)
             const lineTotalPrice = moneyFormatter.format(lineTotal)
-
+            
             return (
               <div
                 key={item.id}
@@ -87,7 +87,7 @@ export const CartPage = () => {
               >
                 <div className="flex-1 flex">
                   <img
-                    src={item.imageUrl}
+                    src={item.imageSrc || item.imageUrl}
                     alt={item.name || "Producto"}
                     className="max-w-28 object-contain"
                     style={{ aspectRatio: "4/3" }}
@@ -145,7 +145,7 @@ export const CartPage = () => {
           </button>
         </div>
 
-        {/* Resumen */}
+       
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-fit">
           <h2 className="text-[22px] font-bold text-gray-900 pb-4 border-b border-gray-200">
             Resumen de tu compra

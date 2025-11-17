@@ -6,26 +6,18 @@ import { ProductPage } from "../pages/ProductPage";
 import { OrderPage } from "../pages/OrderPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import NewProductPage from "../pages/NewProductPage";
-import { EditProductPage } from "../pages/EditProductPage";
 import { Layout } from "../components/Layout";
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
 import AdminRoutes from './AdminRoutes'
-import { useSelector, useDispatch } from "react-redux";
-import { validateSession } from '../redux/authSlice'
+import { useSelector } from "react-redux";
 import LoadingPage from "../pages/LoadingPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import PaymentPage from "../pages/PaymentPage";
-import { useEffect } from 'react'
 import CartPage from "../pages/CartPage" 
 
 export default function AppRouter() {
   const { status } = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(validateSession())
-  }, [])
 
   if (status === 'checking') {
     return <LoadingPage />

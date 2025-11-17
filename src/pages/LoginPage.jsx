@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import cartSlice from '../redux/cartSlice'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { login } from "../redux/authSlice";
@@ -14,10 +15,14 @@ export const LoginPage = () => {
 
   if (status === "authenticated") return <Navigate to="/" />;
 
+  useEffect(() => {
+    dispatch(cartSlice.actions.clearCart())
+  }, [])
+
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
 
-    // ⚠️ Validación campos vacíos
+   
     if (!email.trim() || !password.trim()) {
       toast.error("Es necesario rellenar ambos campos");
       return;

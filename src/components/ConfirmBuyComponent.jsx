@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { backend } from "../api/backend";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchProducts } from "../redux/productsSlice";
+import productsSlice, { fetchProducts } from "../redux/productsSlice";
+import { createOrder } from "../redux/orderSlice";
+
 import cartSlice from "../redux/cartSlice";
 import toast from "react-hot-toast";
 
@@ -22,7 +23,7 @@ export default function ConfirmBuyComponent({
   const [buying, setBuying] = useState(false);
 
   const openModal = (e) => {
-    e.stopPropagation(); // <-- ANTI BURBUJA
+    e.stopPropagation(); 
     onClick(e)
     setPaymentMethod("");
     setIsModalOpen(true);
@@ -45,20 +46,25 @@ export default function ConfirmBuyComponent({
     try {
       setBuying(true);
 
-      const { data } = await backend.post("/orders", {
+      const { payload: data } = await dispatch(createOrder({
         userId: user.userId,
         paymentMethod: "TRANSFER",
         orderProductRequest: items.map((item) => ({
           productId: item.id,
           units: item.units,
         })),
-      });
-
+      }))
+      
       if (data.id) {
+        items.forEach(item => (
+          dispatch(productsSlice.actions.decrementProductStockById({
+            id: item.id,
+            units: item.units
+          })
+        )))
         toast.success("Pago realizado correctamente");
         navigate("/orden", { replace: true });
 
-        dispatch(fetchProducts({ isAdmin: user?.profile?.role === "ADMIN" }));
         dispatch(cartSlice.actions.clearCart());
       }
     } catch (err) {
